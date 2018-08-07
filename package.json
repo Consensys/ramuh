@@ -1,0 +1,21 @@
+{
+  "name": "ithildin",
+  "version": "0.1.0",
+  "description": "ithildin",
+  "main": "index.js",
+  "scripts": {
+    "lint": "standard",
+    "test": "npm run lint && tape 'test/**/*.js'"
+  },
+  "author": "Federico Gimenez <federico.gimenez@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "yargs": "^11.0.0"
+  },
+  "devDependencies": {
+    "sinon": "^6.0.0",
+    "standard": "~11.0.1",
+    "tape": "~4.9.0",
+    "tmp": "~0.0.33"
+  }
+}
