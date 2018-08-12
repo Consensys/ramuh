@@ -3,6 +3,7 @@
 
 const { getLogger } = require('../lib/logging')
 const os = require('os')
+const path = require('path')
 
 const args = require('yargs')
   .options({
@@ -38,6 +39,6 @@ function run () {
 
 try {
   run()
-} catch(err) {
-  logger.error(err))
+} catch (err) {
+  logger.error(err)
 }
