@@ -34,7 +34,7 @@ const args = require('yargs')
 const logger = getLogger({loglevel: args.loglevel})
 
 function run () {
-
+  logger.info('Starting ithildin...')
 }
 
 try {
