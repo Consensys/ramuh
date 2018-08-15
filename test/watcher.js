@@ -64,7 +64,46 @@ tape('[WATCHER]: observed files', t => {
   })
 
   t.test('should pipe file name of new .sol files on creation only once', st => {
-    st.end()
+    const tmpDir = tmp.dirSync().name
+    const watcher = new Watcher({tmpDir: tmpDir, pollingStep: 10})
+
+    const ts = through(function write (data) {
+      this.emit('data', data)
+    })
+
+    const fileCreation = (name, doPipe) => {
+      const filePath = path.resolve(tmpDir, name)
+      fs.writeFile(filePath, 'Hey there!', function (err) {
+        st.error(err, `writing ${filePath} succeeded`)
+        if (doPipe) {
+          watcher.pipe(ts)
+        }
+      })
+    }
+    fileCreation('test.sol')
+    setTimeout(fileCreation, 50, 'test.sol')
+    setTimeout(fileCreation, 50, 'test2.sol')
+    setTimeout(fileCreation, 50, 'test.sol')
+    setTimeout(fileCreation, 50, 'test3.sol', true)
+
+    let found = false
+    let total = 0
+    const expected = path.resolve(tmpDir, 'test.sol')
+    ts.on('data', function (data) {
+      total++
+      const actual = data.toString('utf8')
+      if (actual === expected && !found) {
+        found = true
+        return
+      }
+      if (found) {
+        st.notEqual(actual, expected, `files should be sent only once, actual: ${actual}`)
+      }
+      if (total === 3) {
+        watcher.stop()
+        st.end()
+      }
+    })
   })
 
   t.test('should pipe file name of new .sol files on changes', st => {
