@@ -10,7 +10,6 @@ const logger = getLogger({loglevel: 'error'})
 tape('[WATCHER]: observed files', t => {
   t.test('should pipe file name of new .sol files on creation', st => {
     const tmpDir = tmp.dirSync().name
-
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
     const ts = through(function write (data) {
@@ -139,11 +138,29 @@ tape('[WATCHER]: observed files', t => {
     })
   })
 
-  t.test('should not pipe file name of files with non sol extension on changes', st => {
-    st.end()
-  })
-
   t.test('should pipe file name of new .sol files created on subfolders', st => {
-    st.end()
+    const tmpDir = tmp.dirSync().name
+    const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
+
+    const ts = through(function write (data) {
+      this.emit('data', data)
+    })
+
+    const subFolder = path.resolve(tmpDir, 'sub')
+    fs.mkdirSync(subFolder)
+
+    const filePath = path.resolve(subFolder, 'test.sol')
+    fs.writeFile(filePath, 'Hey there!', function (err) {
+      st.error(err, 'writing file succeeded')
+
+      watcher.pipe(ts)
+    })
+
+    ts.on('data', function (data) {
+      const actual = data.toString('utf8')
+      st.equal(actual, filePath)
+      watcher.stop()
+      st.end()
+    })
   })
 })
