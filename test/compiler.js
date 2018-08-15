@@ -30,9 +30,17 @@ contract Hello {}
     })
 
     target.on('data', function (data) {
-      const actual = data.toString('utf8')
-      const expected = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
-      st.equal(actual, expected)
+      const actualBytecode = data.bytecode
+      const expectedBytecode = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
+      st.equal(actualBytecode, expectedBytecode)
+
+      const actualFilepath = data.filePath
+      st.equal(actualFilepath, filePath)
+
+      const actualContract = data.contract
+      const expectedContract = ':Hello'
+      st.equal(actualContract, expectedContract)
+
       st.end()
     })
   })
