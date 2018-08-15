@@ -40,7 +40,7 @@ tape('[WATCHER]: observed files', t => {
     })
 
     const badFileName = 'test.abc'
-    let fileNames = ['test1.sol', badFileName, 'test2.sol']
+    const fileNames = ['test1.sol', badFileName, 'test2.sol']
     for (let i = 0; i < fileNames.length; i++) {
       const filePath = path.resolve(tmpDir, fileNames[i])
       fs.writeFile(filePath, 'Hey there!', function (err) {
@@ -99,7 +99,7 @@ tape('[WATCHER]: observed files', t => {
         return
       }
       if (found) {
-        st.notEqual(actual, expected, `files should be sent only once, actual: ${actual}`)
+        st.notEqual(actual, expected)
       }
       if (total === 3) {
         watcher.stop()
