@@ -4,11 +4,14 @@ const fs = require('fs')
 const tmp = require('tmp')
 const path = require('path')
 const through = require('through')
+const { getLogger } = require('../lib/logging')
+const logger = getLogger({loglevel: 'error'})
 
 tape('[WATCHER]: observed files', t => {
   t.test('should pipe file name of new .sol files on creation', st => {
     const tmpDir = tmp.dirSync().name
-    const watcher = new Watcher({tmpDir: tmpDir, pollingStep: 10})
+
+    const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
     const ts = through(function write (data) {
       this.emit('data', data)
@@ -31,7 +34,7 @@ tape('[WATCHER]: observed files', t => {
 
   t.test('should not pipe file name of new files with non sol extension on creation', st => {
     const tmpDir = tmp.dirSync().name
-    const watcher = new Watcher({tmpDir: tmpDir, pollingStep: 10})
+    const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
     const ts = through(function write (data) {
       this.emit('data', data)
@@ -65,7 +68,7 @@ tape('[WATCHER]: observed files', t => {
 
   t.test('should pipe file name of new .sol files on creation only once', st => {
     const tmpDir = tmp.dirSync().name
-    const watcher = new Watcher({tmpDir: tmpDir, pollingStep: 10})
+    const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
     const ts = through(function write (data) {
       this.emit('data', data)
@@ -106,15 +109,37 @@ tape('[WATCHER]: observed files', t => {
     })
   })
 
-  t.test('should pipe file name of new .sol files on changes', st => {
-    st.end()
+  t.test('should pipe file name of .sol files on changes', st => {
+    const tmpDir = tmp.dirSync().name
+    const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
+
+    const ts = through(function write (data) {
+      this.emit('data', data)
+    })
+
+    const filePath = path.resolve(tmpDir, 'test.sol')
+    fs.writeFile(filePath, 'Hey there!', (err) => {
+      st.error(err, 'writing file succeeded')
+      watcher.pipe(ts)
+      setTimeout(fs.appendFile, 50, filePath, 'more data, yay!', (err) => {
+        st.error(err, 'appending to file succeeded')
+      })
+    })
+
+    let created = false
+    ts.on('data', function (data) {
+      const actual = data.toString('utf8')
+      st.equal(actual, filePath)
+      if (created === false) {
+        created = true
+      } else {
+        watcher.stop()
+        st.end()
+      }
+    })
   })
 
-  t.test('should not pipe file name of new files with non sol extension on changes', st => {
-    st.end()
-  })
-
-  t.test('should pipe file name of new .sol files on changes only once', st => {
+  t.test('should not pipe file name of files with non sol extension on changes', st => {
     st.end()
   })
 

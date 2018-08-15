@@ -4,12 +4,13 @@
 const { getLogger } = require('../lib/logging')
 const os = require('os')
 const path = require('path')
+const Watcher = require('../lib/watcher')
 
 const args = require('yargs')
   .options({
     'contractspath': {
       describe: 'relative path to watch contract files',
-      default: path.join(__dirname, 'contracts')
+      default: path.resolve(__dirname, '..', 'contracts')
     },
     'apiaddress': {
       describe: 'Address of Mythril API',
@@ -35,6 +36,8 @@ const logger = getLogger({loglevel: args.loglevel})
 
 function run () {
   logger.info('Starting ithildin...')
+
+  new Watcher({logger: logger, contractsPath: args.contractspath}) // eslint-disable-line no-new
 }
 
 try {
