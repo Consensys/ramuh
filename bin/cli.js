@@ -4,7 +4,10 @@
 const { getLogger } = require('../lib/logging')
 const os = require('os')
 const path = require('path')
+const { pipeline } = require('stream');
+const solc = require('solc')
 const Watcher = require('../lib/watcher')
+const Compiler = require('../lib/compiler')
 
 const args = require('yargs')
   .options({
@@ -37,7 +40,10 @@ const logger = getLogger({loglevel: args.loglevel})
 function run () {
   logger.info('Starting ithildin...')
 
-  new Watcher({logger: logger, contractsPath: args.contractspath}) // eslint-disable-line no-new
+  const w = new Watcher({logger: logger, contractsPath: args.contractspath})
+  const c = new Compiler({logger: logger, solc: solc})
+
+  w.pipe(c)
 }
 
 try {
