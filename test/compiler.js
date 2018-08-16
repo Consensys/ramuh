@@ -85,4 +85,52 @@ contract Hello {}
       st.end()
     })
   })
+
+  t.test('should return bytecode of files with multiple contracts', st => {
+    const tmpDir = tmp.dirSync().name
+    const filePath = path.resolve(tmpDir, 'test.sol')
+
+    const expectedBytecode = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
+    sinon.stub(solc, 'compile').returns({
+      contracts: {
+        ':GoodBay': {
+          bytecode: expectedBytecode
+        },
+        ':Hello': {
+          bytecode: expectedBytecode
+        }
+      }
+    })
+    const compiler = new Compiler({logger: logger, solc: solc})
+
+    const origin = through()
+    const target = through(function write (data) {
+      this.emit('data', data)
+    })
+
+    origin.pipe(compiler).pipe(target)
+
+    const contractContent = `pragma solidity ^0.4.24;
+contract GoodBay {}
+contract Hello is GoodBay {}
+`
+    fs.writeFile(filePath, contractContent, (err) => {
+      st.error(err, 'writing file succeeded')
+
+      origin.write(filePath)
+    })
+
+    target.on('data', (data) => {
+      st.equal(data.filePath, filePath)
+
+      st.equal(data.contracts[0].name, ':GoodBay')
+      st.equal(data.contracts[0].bytecode, expectedBytecode)
+
+      st.equal(data.contracts[1].name, ':Hello')
+      st.equal(data.contracts[1].bytecode, expectedBytecode)
+
+      solc.compile.restore()
+      st.end()
+    })
+  })
 })
