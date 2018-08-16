@@ -43,6 +43,10 @@ function run () {
   const w = new Watcher({logger: logger, contractsPath: args.contractspath})
   const c = new Compiler({logger: logger, solc: solc})
 
+  const errorHandler = (err) => logger.error(err)
+  w.on('error', errorHandler)
+  c.on('error', errorHandler)
+
   w.pipe(c)
 }
 
