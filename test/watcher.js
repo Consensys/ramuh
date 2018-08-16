@@ -17,13 +17,13 @@ tape('[WATCHER]: observed files', t => {
     })
 
     const filePath = path.resolve(tmpDir, 'test.sol')
-    fs.writeFile(filePath, 'Hey there!', function (err) {
+    fs.writeFile(filePath, 'Hey there!', (err) => {
       st.error(err, 'writing file succeeded')
 
       watcher.pipe(ts)
     })
 
-    ts.on('data', function (data) {
+    ts.on('data', (data) => {
       const actual = data.toString('utf8')
       st.equal(actual, filePath)
       watcher.stop()
@@ -43,7 +43,7 @@ tape('[WATCHER]: observed files', t => {
     const fileNames = ['test1.sol', badFileName, 'test2.sol']
     for (let i = 0; i < fileNames.length; i++) {
       const filePath = path.resolve(tmpDir, fileNames[i])
-      fs.writeFile(filePath, 'Hey there!', function (err) {
+      fs.writeFile(filePath, 'Hey there!', (err) => {
         st.error(err, `writing ${filePath} succeeded`)
 
         if (i === fileNames.length - 1) {
@@ -54,7 +54,7 @@ tape('[WATCHER]: observed files', t => {
 
     let total = 0
     const notExpected = path.resolve(tmpDir, badFileName)
-    ts.on('data', function (data) {
+    ts.on('data', (data) => {
       total++
       const actual = data.toString('utf8')
       st.notEqual(actual, notExpected, 'non .sol files should not be sent')
@@ -75,7 +75,7 @@ tape('[WATCHER]: observed files', t => {
 
     const fileCreation = (name, doPipe) => {
       const filePath = path.resolve(tmpDir, name)
-      fs.writeFile(filePath, 'Hey there!', function (err) {
+      fs.writeFile(filePath, 'Hey there!', (err) => {
         st.error(err, `writing ${filePath} succeeded`)
         if (doPipe) {
           watcher.pipe(ts)
@@ -91,7 +91,7 @@ tape('[WATCHER]: observed files', t => {
     let found = false
     let total = 0
     const expected = path.resolve(tmpDir, 'test.sol')
-    ts.on('data', function (data) {
+    ts.on('data', (data) => {
       total++
       const actual = data.toString('utf8')
       if (actual === expected && !found) {
@@ -126,7 +126,7 @@ tape('[WATCHER]: observed files', t => {
     })
 
     let created = false
-    ts.on('data', function (data) {
+    ts.on('data', (data) => {
       const actual = data.toString('utf8')
       st.equal(actual, filePath)
       if (created === false) {
@@ -150,13 +150,13 @@ tape('[WATCHER]: observed files', t => {
     fs.mkdirSync(subFolder)
 
     const filePath = path.resolve(subFolder, 'test.sol')
-    fs.writeFile(filePath, 'Hey there!', function (err) {
+    fs.writeFile(filePath, 'Hey there!', (err) => {
       st.error(err, 'writing file succeeded')
 
       watcher.pipe(ts)
     })
 
-    ts.on('data', function (data) {
+    ts.on('data', (data) => {
       const actual = data.toString('utf8')
       st.equal(actual, filePath)
       watcher.stop()
