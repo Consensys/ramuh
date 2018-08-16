@@ -4,7 +4,6 @@
 const { getLogger } = require('../lib/logging')
 const os = require('os')
 const path = require('path')
-const { pipeline } = require('stream');
 const solc = require('solc')
 const Watcher = require('../lib/watcher')
 const Compiler = require('../lib/compiler')

@@ -34,19 +34,52 @@ tape('[COMPILER]: compile files', t => {
     const contractContent = `pragma solidity ^0.4.24;
 contract Hello {}
 `
-    fs.writeFile(filePath, contractContent, function (err) {
+    fs.writeFile(filePath, contractContent, (err) => {
       st.error(err, 'writing file succeeded')
 
       origin.write(filePath)
     })
 
-    target.on('data', function (data) {
+    target.on('data', (data) => {
       st.equal(data.filePath, filePath)
 
       const expectedContract = ':Hello'
       st.equal(data.contracts[0].name, expectedContract)
 
       st.equal(data.contracts[0].bytecode, expectedBytecode)
+
+      solc.compile.restore()
+      st.end()
+    })
+  })
+
+  t.test('should throw on invalid contracts', st => {
+    const errMsg = 'An error happened'
+    sinon.stub(solc, 'compile').returns({
+      errors: [errMsg]
+    })
+    const compiler = new Compiler({logger: logger, solc: solc})
+
+    const origin = through()
+    const target = through(function write (data) {
+      this.emit('data', data)
+    })
+
+    origin.pipe(compiler).pipe(target)
+
+    const contractContent = `pragma solidity ^0.4.24;
+contract Hello {}
+`
+    const tmpDir = tmp.dirSync().name
+    const filePath = path.resolve(tmpDir, 'test.sol')
+    fs.writeFile(filePath, contractContent, (err) => {
+      st.error(err, 'writing file succeeded')
+
+      origin.write(filePath)
+    })
+
+    compiler.on('error', (err) => {
+      st.equal(err, errMsg)
 
       solc.compile.restore()
       st.end()
