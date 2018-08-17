@@ -44,9 +44,9 @@ contract Hello {}
       st.equal(data.filePath, filePath)
 
       const expectedContract = ':Hello'
-      st.equal(data.contracts[0].name, expectedContract)
+      st.equal(data.contract.name, expectedContract)
 
-      st.equal(data.contracts[0].bytecode, expectedBytecode)
+      st.equal(data.contract.bytecode, expectedBytecode)
 
       solc.compile.restore()
       st.end()
@@ -120,17 +120,21 @@ contract Hello is GoodBay {}
       origin.write(filePath)
     })
 
+    let first = true
     target.on('data', (data) => {
       st.equal(data.filePath, filePath)
 
-      st.equal(data.contracts[0].name, ':GoodBay')
-      st.equal(data.contracts[0].bytecode, expectedBytecode)
+      if (first) {
+        st.equal(data.contract.name, ':GoodBay')
+        st.equal(data.contract.bytecode, expectedBytecode)
+        first = false
+      } else {
+        st.equal(data.contract.name, ':Hello')
+        st.equal(data.contract.bytecode, expectedBytecode)
 
-      st.equal(data.contracts[1].name, ':Hello')
-      st.equal(data.contracts[1].bytecode, expectedBytecode)
-
-      solc.compile.restore()
-      st.end()
+        solc.compile.restore()
+        st.end()
+      }
     })
   })
 })

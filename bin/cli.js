@@ -2,7 +2,6 @@
 'use strict'
 
 const { getLogger } = require('../lib/logging')
-const os = require('os')
 const path = require('path')
 const Watcher = require('../lib/watcher')
 const Compiler = require('../lib/compiler')
@@ -20,10 +19,6 @@ const args = require('yargs')
     'apikey': {
       describe: 'API key for accessing Mytrhil',
       default: 'localhost:3100'
-    },
-    'datadir': {
-      describe: 'Data directory to store status analysis',
-      default: `${os.homedir()}/Library/Ethereum`
     },
     'loglevel': {
       describe: 'Logging verbosity',
