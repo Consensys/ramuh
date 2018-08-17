@@ -53,10 +53,6 @@ tape('[REQUESTER]: server interaction', t => {
     })
   })
 
-  t.test('should poll analysis results and pipe them', st => {
-    st.end()
-  })
-
   t.test('should handle server errors', st => {
     st.end()
   })
