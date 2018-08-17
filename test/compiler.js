@@ -50,7 +50,7 @@ contract Hello {}
     })
   })
 
-  t.test('should throw on invalid contracts', st => {
+  t.test('should emit errors on invalid contracts', st => {
     const errMsg = 'An error happened'
     sinon.stub(solc, 'compile').returns({
       errors: [errMsg]
