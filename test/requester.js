@@ -44,7 +44,6 @@ tape('[REQUESTER]: server interaction', t => {
     origin.pipe(requester).pipe(target)
 
     target.on('data', (data) => {
-      console.log('received data!')
       st.equal(data.filePath, filePath)
       st.equal(data.contract.name, contractName)
       st.equal(data.contract.bytecode, bytecode)

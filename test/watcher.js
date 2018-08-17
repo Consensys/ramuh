@@ -3,7 +3,7 @@ const Watcher = require('../lib/watcher')
 const fs = require('fs')
 const tmp = require('tmp')
 const path = require('path')
-const through = require('through')
+const PassThrough = require('stream').PassThrough
 const { getLogger } = require('../lib/logging')
 const logger = getLogger({loglevel: 'error'})
 
@@ -12,9 +12,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = through(function write (data) {
-      this.emit('data', data)
-    })
+    const ts = PassThrough()
 
     const filePath = path.resolve(tmpDir, 'test.sol')
     fs.writeFile(filePath, 'Hey there!', (err) => {
@@ -35,9 +33,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = through(function write (data) {
-      this.emit('data', data)
-    })
+    const ts = PassThrough()
 
     const badFileName = 'test.abc'
     const fileNames = ['test1.sol', badFileName, 'test2.sol']
@@ -69,9 +65,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = through(function write (data) {
-      this.emit('data', data)
-    })
+    const ts = PassThrough()
 
     const fileCreation = (name, doPipe) => {
       const filePath = path.resolve(tmpDir, name)
@@ -112,9 +106,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = through(function write (data) {
-      this.emit('data', data)
-    })
+    const ts = PassThrough()
 
     const filePath = path.resolve(tmpDir, 'test.sol')
     fs.writeFile(filePath, 'Hey there!', (err) => {
@@ -142,9 +134,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = through(function write (data) {
-      this.emit('data', data)
-    })
+    const ts = PassThrough()
 
     const subFolder = path.resolve(tmpDir, 'sub')
     fs.mkdirSync(subFolder)

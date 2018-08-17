@@ -3,7 +3,7 @@ const Compiler = require('../lib/compiler')
 const fs = require('fs')
 const path = require('path')
 const tmp = require('tmp')
-const through = require('through')
+const PassThrough = require('stream').PassThrough
 const { getLogger } = require('../lib/logging')
 const logger = getLogger({loglevel: 'error'})
 const sinon = require('sinon')
@@ -24,10 +24,8 @@ tape('[COMPILER]: compile files', t => {
     })
     const compiler = new Compiler({logger: logger})
 
-    const origin = through()
-    const target = through(function write (data) {
-      this.emit('data', data)
-    })
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
 
     origin.pipe(compiler).pipe(target)
 
@@ -43,8 +41,7 @@ contract Hello {}
     target.on('data', (data) => {
       st.equal(data.filePath, filePath)
 
-      const expectedContract = ':Hello'
-      st.equal(data.contract.name, expectedContract)
+      st.equal(data.contract.name, ':Hello')
 
       st.equal(data.contract.bytecode, expectedBytecode)
 
@@ -58,12 +55,10 @@ contract Hello {}
     sinon.stub(solc, 'compile').returns({
       errors: [errMsg]
     })
-    const compiler = new Compiler({logger: logger, solc: solc})
+    const compiler = new Compiler({logger: logger})
 
-    const origin = through()
-    const target = through(function write (data) {
-      this.emit('data', data)
-    })
+    const origin = PassThrough()
+    const target = PassThrough({objectMode: true})
 
     origin.pipe(compiler).pipe(target)
 
@@ -103,10 +98,8 @@ contract Hello {}
     })
     const compiler = new Compiler({logger: logger})
 
-    const origin = through()
-    const target = through(function write (data) {
-      this.emit('data', data)
-    })
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
 
     origin.pipe(compiler).pipe(target)
 
