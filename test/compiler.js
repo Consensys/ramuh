@@ -22,7 +22,7 @@ tape('[COMPILER]: compile files', t => {
         }
       }
     })
-    const compiler = new Compiler({logger: logger, solc: solc})
+    const compiler = new Compiler({logger: logger})
 
     const origin = through()
     const target = through(function write (data) {
@@ -101,7 +101,7 @@ contract Hello {}
         }
       }
     })
-    const compiler = new Compiler({logger: logger, solc: solc})
+    const compiler = new Compiler({logger: logger})
 
     const origin = through()
     const target = through(function write (data) {

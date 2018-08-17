@@ -4,7 +4,6 @@
 const { getLogger } = require('../lib/logging')
 const os = require('os')
 const path = require('path')
-const solc = require('solc')
 const Watcher = require('../lib/watcher')
 const Compiler = require('../lib/compiler')
 
@@ -40,7 +39,7 @@ function run () {
   logger.info('Starting ithildin...')
 
   const w = new Watcher({logger: logger, contractsPath: args.contractspath})
-  const c = new Compiler({logger: logger, solc: solc})
+  const c = new Compiler({logger: logger})
 
   const errorHandler = (err) => logger.error(err)
   w.on('error', errorHandler)
