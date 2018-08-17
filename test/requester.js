@@ -1,41 +1,57 @@
-/*
 const tape = require('tape')
 const Requester = require('../lib/requester')
 const PassThrough = require('stream').PassThrough
 const { getLogger } = require('../lib/logging')
 const logger = getLogger({loglevel: 'error'})
-const http = require('http')
-const sinon = require('sinon')
-const apiaddress = 'localhost:3100'
-const basepath = 'mythril/v1'
-const apikey = 'my-api-key'
+const apiHostname = 'localhost'
+const basePath = '/mythril/v1/analysis'
+const validApiKey = 'my-valid-api-key'
 const filePath = 'test.sol'
+const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
+const nock = require('nock')
+const bytecode = 'my-byte-code'
+const contractName = ':Hello'
 
 tape('[REQUESTER]: server interaction', t => {
   t.test('should request analysis', st => {
-    sinon.stub(http, 'request').returns({
-      contracts: {
-        ':Hello': {
-          bytecode: expectedBytecode
-        }
+    nock(`http://${apiHostname}:3100`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
       }
     })
+      .post(basePath, {
+        type: 'bytecode',
+        contract: bytecode
+      })
+      .reply(200, {
+        result: 'Queued',
+        uuid: uuid
+      })
 
-    const requester = new Client({logger: logger, apiaddress: apiaddress, apikey: apikey})
+    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
 
-    const origin = PassThrough()
-    const target = PassThrough()
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
 
     origin.write({
       filePath: filePath,
       contract: {
-        name: ':Hello',
-        bytecode: 'mybytecode'
+        name: contractName,
+        bytecode: bytecode
       }
     })
-    origin.end()
 
-    st.end()
+    origin.pipe(requester).pipe(target)
+
+    target.on('data', (data) => {
+      console.log('received data!')
+      st.equal(data.filePath, filePath)
+      st.equal(data.contract.name, contractName)
+      st.equal(data.contract.bytecode, bytecode)
+      st.equal(data.analysis.uuid, uuid)
+
+      st.end()
+    })
   })
 
   t.test('should poll analysis results and pipe them', st => {
@@ -56,4 +72,3 @@ tape('[REQUESTER]: authentication', t => {
     st.end()
   })
 })
-*/

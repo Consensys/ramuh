@@ -12,8 +12,8 @@ const args = require('yargs')
       describe: 'relative path to watch contract files',
       default: path.resolve(__dirname, '..', 'contracts')
     },
-    'apiaddress': {
-      describe: 'Address of Mythril API',
+    'apihostname': {
+      describe: 'Hostname of Mythril API server',
       default: 'localhost:3100'
     },
     'apikey': {
