@@ -9,12 +9,13 @@ const logger = getLogger({loglevel: 'error'})
 const sinon = require('sinon')
 const solc = require('solc')
 
+const expectedBytecode = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
+
 tape('[COMPILER]: compile files', t => {
   t.test('should return bytecode of files with a single contract', st => {
     const tmpDir = tmp.dirSync().name
     const filePath = path.resolve(tmpDir, 'test.sol')
 
-    const expectedBytecode = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
     sinon.stub(solc, 'compile').returns({
       contracts: {
         ':Hello': {
@@ -85,7 +86,6 @@ contract Hello {}
     const tmpDir = tmp.dirSync().name
     const filePath = path.resolve(tmpDir, 'test.sol')
 
-    const expectedBytecode = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
     sinon.stub(solc, 'compile').returns({
       contracts: {
         ':GoodBay': {
