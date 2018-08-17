@@ -38,14 +38,14 @@ const logger = getLogger({loglevel: args.loglevel})
 function run () {
   logger.info('Starting ithildin...')
 
-  const w = new Watcher({logger: logger, contractsPath: args.contractspath})
-  const c = new Compiler({logger: logger})
+  const worker = new Watcher({logger: logger, contractsPath: args.contractspath})
+  const compiler = new Compiler({logger: logger})
 
   const errorHandler = (err) => logger.error(err)
-  w.on('error', errorHandler)
-  c.on('error', errorHandler)
+  worker.on('error', errorHandler)
+  compiler.on('error', errorHandler)
 
-  w.pipe(c)
+  worker.pipe(compiler)
 }
 
 try {
