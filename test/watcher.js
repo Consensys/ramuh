@@ -1,10 +1,12 @@
 const tape = require('tape')
-const Watcher = require('../lib/watcher')
 const fs = require('fs')
 const tmp = require('tmp')
 const path = require('path')
 const PassThrough = require('stream').PassThrough
+
+const Watcher = require('../lib/watcher')
 const { getLogger } = require('../lib/logging')
+
 const logger = getLogger({loglevel: 'error'})
 
 tape('[WATCHER]: observed files', t => {
@@ -12,7 +14,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = PassThrough()
+    const ts = PassThrough({objectMode: true})
 
     const filePath = path.resolve(tmpDir, 'test.sol')
     fs.writeFile(filePath, 'Hey there!', (err) => {
@@ -22,8 +24,7 @@ tape('[WATCHER]: observed files', t => {
     })
 
     ts.on('data', (data) => {
-      const actual = data.toString('utf8')
-      st.equal(actual, filePath)
+      st.equal(data.filePath, filePath)
       watcher.stop()
       st.end()
     })
@@ -33,7 +34,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = PassThrough()
+    const ts = PassThrough({objectMode: true})
 
     const badFileName = 'test.abc'
     const fileNames = ['test1.sol', badFileName, 'test2.sol']
@@ -52,8 +53,7 @@ tape('[WATCHER]: observed files', t => {
     const notExpected = path.resolve(tmpDir, badFileName)
     ts.on('data', (data) => {
       total++
-      const actual = data.toString('utf8')
-      st.notEqual(actual, notExpected, 'non .sol files should not be sent')
+      st.notEqual(data.filePath, notExpected, 'non .sol files should not be sent')
       if (total === fileNames.length - 1) {
         watcher.stop()
         st.end()
@@ -65,7 +65,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = PassThrough()
+    const ts = PassThrough({objectMode: true})
 
     const fileCreation = (name, doPipe) => {
       const filePath = path.resolve(tmpDir, name)
@@ -87,7 +87,7 @@ tape('[WATCHER]: observed files', t => {
     const expected = path.resolve(tmpDir, 'test.sol')
     ts.on('data', (data) => {
       total++
-      const actual = data.toString('utf8')
+      const actual = data.filePath
       if (actual === expected && !found) {
         found = true
         return
@@ -106,7 +106,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = PassThrough()
+    const ts = PassThrough({objectMode: true})
 
     const filePath = path.resolve(tmpDir, 'test.sol')
     fs.writeFile(filePath, 'Hey there!', (err) => {
@@ -119,8 +119,7 @@ tape('[WATCHER]: observed files', t => {
 
     let created = false
     ts.on('data', (data) => {
-      const actual = data.toString('utf8')
-      st.equal(actual, filePath)
+      st.equal(data.filePath, filePath)
       if (created === false) {
         created = true
       } else {
@@ -134,7 +133,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
-    const ts = PassThrough()
+    const ts = PassThrough({objectMode: true})
 
     const subFolder = path.resolve(tmpDir, 'sub')
     fs.mkdirSync(subFolder)
@@ -147,8 +146,7 @@ tape('[WATCHER]: observed files', t => {
     })
 
     ts.on('data', (data) => {
-      const actual = data.toString('utf8')
-      st.equal(actual, filePath)
+      st.equal(data.filePath, filePath)
       watcher.stop()
       st.end()
     })

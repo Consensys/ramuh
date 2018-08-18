@@ -1,13 +1,14 @@
 const tape = require('tape')
-const Compiler = require('../lib/compiler')
 const fs = require('fs')
 const path = require('path')
 const tmp = require('tmp')
 const PassThrough = require('stream').PassThrough
-const { getLogger } = require('../lib/logging')
-const logger = getLogger({loglevel: 'error'})
 const sinon = require('sinon')
 const solc = require('solc')
+
+const Compiler = require('../lib/compiler')
+const { getLogger } = require('../lib/logging')
+const logger = getLogger({loglevel: 'error'})
 
 const expectedBytecode = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
 
@@ -36,7 +37,7 @@ contract Hello {}
     fs.writeFile(filePath, contractContent, (err) => {
       st.error(err, 'writing file succeeded')
 
-      origin.write(filePath)
+      origin.write({filePath: filePath})
     })
 
     target.on('data', (data) => {
@@ -58,7 +59,7 @@ contract Hello {}
     })
     const compiler = new Compiler({logger: logger})
 
-    const origin = PassThrough()
+    const origin = PassThrough({objectMode: true})
     const target = PassThrough({objectMode: true})
 
     origin.pipe(compiler).pipe(target)
@@ -71,7 +72,7 @@ contract Hello {}
     fs.writeFile(filePath, contractContent, (err) => {
       st.error(err, 'writing file succeeded')
 
-      origin.write(filePath)
+      origin.write({filePath: filePath})
     })
 
     compiler.on('error', (err) => {
@@ -110,7 +111,7 @@ contract Hello is GoodBay {}
     fs.writeFile(filePath, contractContent, (err) => {
       st.error(err, 'writing file succeeded')
 
-      origin.write(filePath)
+      origin.write({filePath: filePath})
     })
 
     let first = true
