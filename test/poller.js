@@ -39,6 +39,7 @@ tape('[POLLER]: server interaction', t => {
     const target = PassThrough({objectMode: true})
 
     target.on('data', (data) => {
+      st.equal(data.analysis.uuid, uuid)
       st.deepEqual(data.analysis.issues, [])
 
       st.end()
@@ -53,7 +54,17 @@ tape('[POLLER]: server interaction', t => {
     origin.pipe(poller).pipe(target)
   })
   t.test('should poll issues with non empty results', st => {
-    /*
+    const expectedIssues = [
+      {
+        title: 'Unchecked SUICIDE',
+        description: 'The function `_function_0xcbf0b0c0` executes the SUICIDE instruction. The remaining Ether is sent to an address provided as a function argument.\n\nIt seems that this function can be called without restrictions.',
+        function: '_function_0xcbf0b0c0',
+        type: 'Warning',
+        address: 156,
+        debug: 'SOLVER OUTPUT:\ncalldata_MAIN_0: 0xcbf0b0c000000000000000000000000000000000000000000000000000000000\ncalldatasize_MAIN: 0x4\ncallvalue: 0x0\n'
+      }
+    ]
+
     nock(`http://${apiHostname}:3100`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
@@ -72,17 +83,26 @@ tape('[POLLER]: server interaction', t => {
       }
     })
       .get(basePath)
-      .reply(200, [
-        {
-          title: 'Unchecked SUICIDE',
-          description: 'The function `_function_0xcbf0b0c0` executes the SUICIDE instruction. The remaining Ether is sent to an address provided as a function argument.\n\nIt seems that this function can be called without restrictions.',
-          function: '_function_0xcbf0b0c0',
-          type: 'Warning',
-          address: 156,
-          debug: 'SOLVER OUTPUT:\ncalldata_MAIN_0: 0xcbf0b0c000000000000000000000000000000000000000000000000000000000\ncalldatasize_MAIN: 0x4\ncallvalue: 0x0\n'
-        }
-      ])
-    */
-    st.end()
+      .reply(200, expectedIssues)
+
+    const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: validApiKey, pollStep: 10})
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    target.on('data', (data) => {
+      st.equal(data.analysis.uuid, uuid)
+      st.deepEqual(data.analysis.issues, expectedIssues)
+
+      st.end()
+    })
+
+    origin.write({
+      analysis: {
+        uuid: uuid
+      }
+    })
+
+    origin.pipe(poller).pipe(target)
   })
 })
