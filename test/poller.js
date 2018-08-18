@@ -4,7 +4,7 @@ const PassThrough = require('stream').PassThrough
 const { getLogger } = require('../lib/logging')
 const nock = require('nock')
 
-const logger = getLogger({loglevel: 'error'})
+const logger = getLogger({loglevel: 'err'})
 const apiHostname = 'localhost'
 const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
 const basePath = `/mythril/v1/analysis/${uuid}/issues`
@@ -118,7 +118,7 @@ tape('[POLLER]: error handling', t => {
 
     const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: validApiKey, pollStep: 10})
 
-    poller.on('error', (err) => {
+    poller.on('err', (err) => {
       st.equal(err, 'received error 500 from API server')
 
       st.end()
@@ -149,7 +149,7 @@ tape('[POLLER]: error handling', t => {
 
     const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: inValidApiKey, pollStep: 10})
 
-    poller.on('error', (err) => {
+    poller.on('err', (err) => {
       st.equal(err, `Unauthorized analysis request, API key: ${inValidApiKey}`)
 
       st.end()

@@ -70,8 +70,69 @@ tape('[REQUESTER]: server interaction', t => {
 
     const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
 
-    requester.on('error', (err) => {
+    requester.on('err', (err) => {
       st.equal(err, 'received error 500 from API server')
+
+      st.end()
+    })
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    origin.write({
+      filePath: filePath,
+      contract: {
+        name: contractName,
+        bytecode: bytecode
+      }
+    })
+
+    origin.pipe(requester).pipe(target)
+  })
+
+  t.test('should handle connection errors', st => {
+    const invalidApiHostname = 'not-a-valid-hostname'
+    const requester = new Requester({logger: logger, apiHostname: invalidApiHostname, apiKey: validApiKey})
+
+    requester.on('err', (err) => {
+      st.equal(err, `could not connect to API server at ${invalidApiHostname}`)
+
+      st.end()
+    })
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    origin.write({
+      filePath: filePath,
+      contract: {
+        name: contractName,
+        bytecode: bytecode
+      }
+    })
+
+    origin.pipe(requester).pipe(target)
+  })
+
+  t.test('should handle request limit errors', st => {
+    const expectedErrorMsg = 'Request limit exceeded'
+    nock(`http://${apiHostname}:3100`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .post(basePath, {
+        type: 'bytecode',
+        contract: bytecode
+      })
+      .reply(429, {
+        error: expectedErrorMsg
+      })
+
+    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
+
+    requester.on('err', (err) => {
+      st.equal(err, expectedErrorMsg)
 
       st.end()
     })
@@ -107,7 +168,7 @@ tape('[REQUESTER]: authentication', t => {
       .reply(401, 'Unauthorized')
 
     const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: inValidApiKey})
-    requester.on('error', (err) => {
+    requester.on('err', (err) => {
       st.equal(err, `Unauthorized analysis request, API key: ${inValidApiKey}`)
 
       st.end()

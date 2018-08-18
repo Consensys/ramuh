@@ -8,7 +8,7 @@ const solc = require('solc')
 
 const Compiler = require('../lib/compiler')
 const { getLogger } = require('../lib/logging')
-const logger = getLogger({loglevel: 'error'})
+const logger = getLogger({loglevel: 'err'})
 
 const expectedBytecode = '6080604052348015600f57600080fd5b50603580601d6000396000f3006080604052600080fd00a165627a7a72305820dc80e598282646461f0b0d4e04097ad20ec3797452ca6ee933b63ad5aa24e3aa0029'
 
@@ -75,7 +75,7 @@ contract Hello {}
       origin.write({filePath: filePath})
     })
 
-    compiler.on('error', (err) => {
+    compiler.on('err', (err) => {
       st.equal(err, errMsg)
 
       solc.compile.restore()

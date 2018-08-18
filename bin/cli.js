@@ -17,15 +17,14 @@ const args = require('yargs')
     },
     'apihostname': {
       describe: 'Hostname of Mythril API server',
-      default: 'localhost:3100'
+      default: 'localhost'
     },
     'apikey': {
-      describe: 'API key for accessing Mytrhil',
-      default: 'localhost:3100'
+      describe: 'API key for accessing Mytrhil'
     },
     'loglevel': {
       describe: 'Logging verbosity',
-      choices: [ 'error', 'warn', 'info', 'debug' ],
+      choices: [ 'err', 'warn', 'info', 'debug' ],
       default: 'info'
     }
   })
@@ -48,10 +47,10 @@ function run () {
     apiKey: args.apikey})
 
   const errorHandler = (err) => logger.error(err)
-  watcher.on('error', errorHandler)
-  compiler.on('error', errorHandler)
-  requester.on('error', errorHandler)
-  poller.on('error', errorHandler)
+  watcher.on('err', errorHandler)
+  compiler.on('err', errorHandler)
+  requester.on('err', errorHandler)
+  poller.on('err', errorHandler)
 
   // main pipeline, each step adds info to the object in transit
 
