@@ -150,6 +150,42 @@ tape('[REQUESTER]: server interaction', t => {
 
     origin.pipe(requester).pipe(target)
   })
+  t.test('should handle validation errors', st => {
+    const expectedErrorMsg = 'Validation failed'
+    nock(`http://${apiHostname}:3100`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .post(basePath, {
+        type: 'bytecode',
+        contract: bytecode
+      })
+      .reply(400, {
+        error: expectedErrorMsg
+      })
+
+    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
+
+    requester.on('err', (err) => {
+      st.equal(err, expectedErrorMsg)
+
+      st.end()
+    })
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    origin.write({
+      filePath: filePath,
+      contract: {
+        name: contractName,
+        bytecode: bytecode
+      }
+    })
+
+    origin.pipe(requester).pipe(target)
+  })
 })
 
 tape('[REQUESTER]: authentication', t => {
