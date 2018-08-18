@@ -7,14 +7,16 @@ const nock = require('nock')
 const logger = getLogger({loglevel: 'error'})
 const apiHostname = 'localhost'
 const basePath = '/mythril/v1/analysis'
-const validApiKey = 'my-valid-api-key'
 const filePath = 'test.sol'
-const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
 const bytecode = 'my-byte-code'
 const contractName = ':Hello'
 
 tape('[REQUESTER]: server interaction', t => {
+  const validApiKey = 'my-valid-api-key'
+
   t.test('should request analysis', st => {
+    const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
+
     nock(`http://${apiHostname}:3100`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
@@ -69,7 +71,7 @@ tape('[REQUESTER]: server interaction', t => {
     const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
 
     requester.on('error', (err) => {
-      st.equal(err, 'received error from API server')
+      st.equal(err, 'received error 500 from API server')
 
       st.end()
     })
@@ -90,11 +92,38 @@ tape('[REQUESTER]: server interaction', t => {
 })
 
 tape('[REQUESTER]: authentication', t => {
-  t.test('should send api key', st => {
-    st.end()
-  })
-
   t.test('should handle authentication errors', st => {
-    st.end()
+    const inValidApiKey = 'my-invalid-api--key-sigh'
+
+    nock(`http://${apiHostname}:3100`, {
+      reqheaders: {
+        authorization: `Bearer ${inValidApiKey}`
+      }
+    })
+      .post(basePath, {
+        type: 'bytecode',
+        contract: bytecode
+      })
+      .reply(401, 'Unauthorized')
+
+    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: inValidApiKey})
+    requester.on('error', (err) => {
+      st.equal(err, `Unauthorized analysis request, API key: ${inValidApiKey}`)
+
+      st.end()
+    })
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    origin.write({
+      filePath: filePath,
+      contract: {
+        name: contractName,
+        bytecode: bytecode
+      }
+    })
+
+    origin.pipe(requester).pipe(target)
   })
 })
