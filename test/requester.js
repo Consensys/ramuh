@@ -2,13 +2,14 @@ const tape = require('tape')
 const Requester = require('../lib/requester')
 const PassThrough = require('stream').PassThrough
 const { getLogger } = require('../lib/logging')
+const nock = require('nock')
+
 const logger = getLogger({loglevel: 'error'})
 const apiHostname = 'localhost'
 const basePath = '/mythril/v1/analysis'
 const validApiKey = 'my-valid-api-key'
 const filePath = 'test.sol'
 const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
-const nock = require('nock')
 const bytecode = 'my-byte-code'
 const contractName = ':Hello'
 
@@ -54,7 +55,37 @@ tape('[REQUESTER]: server interaction', t => {
   })
 
   t.test('should handle server errors', st => {
-    st.end()
+    nock(`http://${apiHostname}:3100`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .post(basePath, {
+        type: 'bytecode',
+        contract: bytecode
+      })
+      .reply(500)
+
+    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
+
+    requester.on('error', (err) => {
+      st.equal(err, 'received error from API server')
+
+      st.end()
+    })
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    origin.write({
+      filePath: filePath,
+      contract: {
+        name: contractName,
+        bytecode: bytecode
+      }
+    })
+
+    origin.pipe(requester).pipe(target)
   })
 })
 
