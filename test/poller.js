@@ -8,10 +8,9 @@ const logger = getLogger({loglevel: 'error'})
 const apiHostname = 'localhost'
 const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
 const basePath = `/mythril/v1/analysis/${uuid}/issues`
+const validApiKey = 'my-valid-api-key'
 
 tape('[POLLER]: server interaction', t => {
-  const validApiKey = 'my-valid-api-key'
-
   t.test('should poll issues with empty results', st => {
     nock(`http://${apiHostname}:3100`, {
       reqheaders: {
@@ -96,6 +95,68 @@ tape('[POLLER]: server interaction', t => {
 
       st.end()
     })
+
+    origin.write({
+      analysis: {
+        uuid: uuid
+      }
+    })
+
+    origin.pipe(poller).pipe(target)
+  })
+})
+
+tape('[POLLER]: error handling', t => {
+  t.test('should emit error on server 500', st => {
+    nock(`http://${apiHostname}:3100`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .get(basePath)
+      .reply(500)
+
+    const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: validApiKey, pollStep: 10})
+
+    poller.on('error', (err) => {
+      st.equal(err, 'received error 500 from API server')
+
+      st.end()
+    })
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    origin.write({
+      analysis: {
+        uuid: uuid
+      }
+    })
+
+    origin.pipe(poller).pipe(target)
+  })
+
+  t.test('should emit error on authnetication error', st => {
+    const inValidApiKey = 'invalid-api-key'
+
+    nock(`http://${apiHostname}:3100`, {
+      reqheaders: {
+        authorization: `Bearer ${inValidApiKey}`
+      }
+    })
+      .get(basePath)
+      .reply(401, 'Unauthorized')
+
+    const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: inValidApiKey, pollStep: 10})
+
+    poller.on('error', (err) => {
+      st.equal(err, `Unauthorized analysis request, API key: ${inValidApiKey}`)
+
+      st.end()
+    })
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
 
     origin.write({
       analysis: {
