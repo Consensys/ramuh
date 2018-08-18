@@ -6,6 +6,7 @@ const path = require('path')
 const Watcher = require('../lib/watcher')
 const Compiler = require('../lib/compiler')
 const Requester = require('../lib/requester')
+const Poller = require('../lib/poller')
 const { getLogger } = require('../lib/logging')
 
 const args = require('yargs')
@@ -41,11 +42,16 @@ function run () {
     logger: logger,
     apiHostname: args.apihostname,
     apiKey: args.apikey})
+  const poller = new Poller({
+    logger: logger,
+    apiHostname: args.apihostname,
+    apiKey: args.apikey})
 
   const errorHandler = (err) => logger.error(err)
   watcher.on('error', errorHandler)
   compiler.on('error', errorHandler)
   requester.on('error', errorHandler)
+  poller.on('error', errorHandler)
 
   // main pipeline, each step adds info to the object in transit
 
@@ -55,6 +61,8 @@ function run () {
     .pipe(compiler)
   // requester adds uuid of the requested analysis
     .pipe(requester)
+  // poller adds issues returned by the API
+    .pipe(poller)
 }
 
 try {
