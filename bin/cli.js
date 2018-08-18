@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 'use strict'
 
-const { getLogger } = require('../lib/logging')
 const path = require('path')
+
 const Watcher = require('../lib/watcher')
 const Compiler = require('../lib/compiler')
+const Requester = require('../lib/requester')
+const { getLogger } = require('../lib/logging')
 
 const args = require('yargs')
   .options({
@@ -33,14 +35,26 @@ const logger = getLogger({loglevel: args.loglevel})
 function run () {
   logger.info('Starting ithildin...')
 
-  const worker = new Watcher({logger: logger, contractsPath: args.contractspath})
+  const watcher = new Watcher({logger: logger, contractsPath: args.contractspath})
   const compiler = new Compiler({logger: logger})
+  const requester = new Requester({
+    logger: logger,
+    apiHostname: args.apihostname,
+    apiKey: args.apikey})
 
   const errorHandler = (err) => logger.error(err)
-  worker.on('error', errorHandler)
+  watcher.on('error', errorHandler)
   compiler.on('error', errorHandler)
+  requester.on('error', errorHandler)
 
-  worker.pipe(compiler)
+  // main pipeline, each step adds info to the object in transit
+
+  // watcher adds paths of .sol files created/changed
+  watcher
+  // for each contract, compiler adds name and bytecode
+    .pipe(compiler)
+  // requester adds uuid of the requested analysis
+    .pipe(requester)
 }
 
 try {
