@@ -3,16 +3,17 @@ const Poller = require('../lib/poller')
 const PassThrough = require('stream').PassThrough
 const { getLogger } = require('../lib/logging')
 const nock = require('nock')
+const url = require('url')
 
 const logger = getLogger({loglevel: 'err'})
-const apiHostname = 'localhost'
+const apiUrl = url.parse('http://localhost:3108')
 const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
 const basePath = `/mythril/v1/analysis/${uuid}/issues`
 const validApiKey = 'my-valid-api-key'
 
 tape('[POLLER]: server interaction', t => {
   t.test('should poll issues with empty results', st => {
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -24,7 +25,7 @@ tape('[POLLER]: server interaction', t => {
         error: 'Result is not Finished',
         stack: 'BadRequestError: Result is not Finished\n    at getIssues (/home/fgimenez/workspace/mythril-api/src/services/AnalysisService.js:129:11)\n    at <anonymous>'
       })
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -32,7 +33,7 @@ tape('[POLLER]: server interaction', t => {
       .get(basePath)
       .reply(200, [])
 
-    const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: validApiKey, pollStep: 10})
+    const poller = new Poller({logger: logger, apiUrl: apiUrl, apiKey: validApiKey, pollStep: 10})
 
     const origin = PassThrough({objectMode: true})
     const target = PassThrough({objectMode: true})
@@ -64,7 +65,7 @@ tape('[POLLER]: server interaction', t => {
       }
     ]
 
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -76,7 +77,7 @@ tape('[POLLER]: server interaction', t => {
         error: 'Result is not Finished',
         stack: 'BadRequestError: Result is not Finished\n    at getIssues (/home/fgimenez/workspace/mythril-api/src/services/AnalysisService.js:129:11)\n    at <anonymous>'
       })
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -84,7 +85,7 @@ tape('[POLLER]: server interaction', t => {
       .get(basePath)
       .reply(200, expectedIssues)
 
-    const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: validApiKey, pollStep: 10})
+    const poller = new Poller({logger: logger, apiUrl: apiUrl, apiKey: validApiKey, pollStep: 10})
 
     const origin = PassThrough({objectMode: true})
     const target = PassThrough({objectMode: true})
@@ -108,7 +109,7 @@ tape('[POLLER]: server interaction', t => {
 
 tape('[POLLER]: error handling', t => {
   t.test('should emit error on server 500', st => {
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -116,7 +117,7 @@ tape('[POLLER]: error handling', t => {
       .get(basePath)
       .reply(500)
 
-    const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: validApiKey, pollStep: 10})
+    const poller = new Poller({logger: logger, apiUrl: apiUrl, apiKey: validApiKey, pollStep: 10})
 
     poller.on('err', (err) => {
       st.equal(err, 'received error 500 from API server')
@@ -139,7 +140,7 @@ tape('[POLLER]: error handling', t => {
   t.test('should emit error on authnetication error', st => {
     const inValidApiKey = 'invalid-api-key'
 
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${inValidApiKey}`
       }
@@ -147,7 +148,7 @@ tape('[POLLER]: error handling', t => {
       .get(basePath)
       .reply(401, 'Unauthorized')
 
-    const poller = new Poller({logger: logger, apiHostname: apiHostname, apiKey: inValidApiKey, pollStep: 10})
+    const poller = new Poller({logger: logger, apiUrl: apiUrl, apiKey: inValidApiKey, pollStep: 10})
 
     poller.on('err', (err) => {
       st.equal(err, `Unauthorized analysis request, API key: ${inValidApiKey}`)
