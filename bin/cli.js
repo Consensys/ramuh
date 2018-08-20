@@ -2,6 +2,7 @@
 'use strict'
 
 const path = require('path')
+const url = require('url')
 
 const Watcher = require('../lib/watcher')
 const Compiler = require('../lib/compiler')
@@ -15,9 +16,9 @@ const args = require('yargs')
       describe: 'relative path to watch contract files',
       default: path.resolve(__dirname, '..', 'contracts')
     },
-    'apihostname': {
-      describe: 'Hostname of Mythril API server',
-      default: 'localhost'
+    'apiurl': {
+      describe: 'URL of Mythril API server',
+      default: 'https://api.mythril.ai'
     },
     'apikey': {
       describe: 'API key for accessing Mytrhil'
@@ -35,15 +36,21 @@ const logger = getLogger({loglevel: args.loglevel})
 function run () {
   logger.info('Starting ithildin...')
 
+  // args validation
+  const apiUrl = url.parse(args.apiurl)
+  if (apiUrl.hostname === null) {
+    throw new Error(`${args.apiurl} is not a valid URL`)
+  }
+
   const watcher = new Watcher({logger: logger, contractsPath: args.contractspath})
   const compiler = new Compiler({logger: logger})
   const requester = new Requester({
     logger: logger,
-    apiHostname: args.apihostname,
+    apiUrl: apiUrl,
     apiKey: args.apikey})
   const poller = new Poller({
     logger: logger,
-    apiHostname: args.apihostname,
+    apiUrl: apiUrl,
     apiKey: args.apikey})
 
   const errorHandler = (err) => logger.error(err)

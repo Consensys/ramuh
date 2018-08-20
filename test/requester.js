@@ -3,9 +3,11 @@ const Requester = require('../lib/requester')
 const PassThrough = require('stream').PassThrough
 const { getLogger } = require('../lib/logging')
 const nock = require('nock')
+const url = require('url')
 
 const logger = getLogger({loglevel: 'error'})
-const apiHostname = 'localhost'
+const apiUrl = 'http://localhost:3100'
+const apiUrlObj = url.parse(apiUrl)
 const basePath = '/mythril/v1/analysis'
 const filePath = 'test.sol'
 const bytecode = 'my-byte-code'
@@ -17,7 +19,7 @@ tape('[REQUESTER]: server interaction', t => {
   t.test('should request analysis', st => {
     const uuid = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
 
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -31,7 +33,7 @@ tape('[REQUESTER]: server interaction', t => {
         uuid: uuid
       })
 
-    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
+    const requester = new Requester({logger: logger, apiUrl: apiUrlObj, apiKey: validApiKey})
 
     const origin = PassThrough({objectMode: true})
     const target = PassThrough({objectMode: true})
@@ -57,7 +59,7 @@ tape('[REQUESTER]: server interaction', t => {
   })
 
   t.test('should handle server errors', st => {
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -68,7 +70,7 @@ tape('[REQUESTER]: server interaction', t => {
       })
       .reply(500)
 
-    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
+    const requester = new Requester({logger: logger, apiUrl: apiUrlObj, apiKey: validApiKey})
 
     requester.on('err', (err) => {
       st.equal(err, 'received error 500 from API server')
@@ -91,11 +93,11 @@ tape('[REQUESTER]: server interaction', t => {
   })
 
   t.test('should handle connection errors', st => {
-    const invalidApiHostname = 'not-a-valid-hostname'
-    const requester = new Requester({logger: logger, apiHostname: invalidApiHostname, apiKey: validApiKey})
+    const invalidApiHostname = 'http://hostname'
+    const requester = new Requester({logger: logger, apiUrl: url.parse(invalidApiHostname), apiKey: validApiKey})
 
     requester.on('err', (err) => {
-      st.equal(err, `could not connect to API server at ${invalidApiHostname}`)
+      st.equal(err, `could not connect to API server at ${invalidApiHostname}/`)
 
       st.end()
     })
@@ -116,7 +118,7 @@ tape('[REQUESTER]: server interaction', t => {
 
   t.test('should handle request limit errors', st => {
     const expectedErrorMsg = 'Request limit exceeded'
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -129,7 +131,7 @@ tape('[REQUESTER]: server interaction', t => {
         error: expectedErrorMsg
       })
 
-    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
+    const requester = new Requester({logger: logger, apiUrl: apiUrlObj, apiKey: validApiKey})
 
     requester.on('err', (err) => {
       st.equal(err, expectedErrorMsg)
@@ -152,7 +154,7 @@ tape('[REQUESTER]: server interaction', t => {
   })
   t.test('should handle validation errors', st => {
     const expectedErrorMsg = 'Validation failed'
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
       }
@@ -165,7 +167,7 @@ tape('[REQUESTER]: server interaction', t => {
         error: expectedErrorMsg
       })
 
-    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: validApiKey})
+    const requester = new Requester({logger: logger, apiUrl: apiUrlObj, apiKey: validApiKey})
 
     requester.on('err', (err) => {
       st.equal(err, expectedErrorMsg)
@@ -192,7 +194,7 @@ tape('[REQUESTER]: authentication', t => {
   t.test('should handle authentication errors', st => {
     const inValidApiKey = 'my-invalid-api--key-sigh'
 
-    nock(`http://${apiHostname}:3100`, {
+    nock(`${apiUrl}`, {
       reqheaders: {
         authorization: `Bearer ${inValidApiKey}`
       }
@@ -203,7 +205,7 @@ tape('[REQUESTER]: authentication', t => {
       })
       .reply(401, 'Unauthorized')
 
-    const requester = new Requester({logger: logger, apiHostname: apiHostname, apiKey: inValidApiKey})
+    const requester = new Requester({logger: logger, apiUrl: apiUrlObj, apiKey: inValidApiKey})
     requester.on('err', (err) => {
       st.equal(err, `Unauthorized analysis request, API key: ${inValidApiKey}`)
 
