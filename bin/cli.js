@@ -63,16 +63,16 @@ function run () {
   resultWriter.on('err', errorHandler)
 
   // main pipeline, each step performs some required functionality and adds info
-  // to the object in transit
+  // to the object in transit.
 
   // watcher looks into an specific directory and starts the pipeline, adds paths
-  // of .sol files created/changed
+  // of .sol files created/changed.
   watcher
   // for each contract in each of the changed/added files, compiler compiles it
-  // and adds its name and bytecode to the object down the pipeline
+  // and adds its name and bytecode to the object down the pipeline.
     .pipe(compiler)
   // requester sends an analysis request to the API and adds uuid of the
-  // requested analysis
+  // requested analysis.
     .pipe(requester)
   // poller keeps querying the API until it gets the analysis results, then adds
   // the returned issues to the in-transit object.
