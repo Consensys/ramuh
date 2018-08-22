@@ -105,6 +105,49 @@ tape('[POLLER]: server interaction', t => {
 
     origin.pipe(poller).pipe(target)
   })
+
+  t.test('should be able to query https api', st => {
+    const httpsApiUrl = url.parse('https://localhost:3100')
+    nock(`${httpsApiUrl.href}`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .get(basePath)
+      .times(3)
+      .reply(400, {
+        status: 400,
+        error: 'Result is not Finished',
+        stack: 'BadRequestError: Result is not Finished\n    at getIssues (/home/fgimenez/workspace/mythril-api/src/services/AnalysisService.js:129:11)\n    at <anonymous>'
+      })
+    nock(`${httpsApiUrl.href}`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .get(basePath)
+      .reply(200, [])
+
+    const poller = new Poller({logger: logger, apiUrl: httpsApiUrl, apiKey: validApiKey, pollStep: 10})
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    target.on('data', (data) => {
+      st.equal(data.analysis.uuid, uuid)
+      st.deepEqual(data.analysis.issues, [])
+
+      st.end()
+    })
+
+    origin.write({
+      analysis: {
+        uuid: uuid
+      }
+    })
+
+    origin.pipe(poller).pipe(target)
+  })
 })
 
 tape('[POLLER]: error handling', t => {
