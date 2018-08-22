@@ -8,6 +8,7 @@ const Watcher = require('../lib/watcher')
 const Compiler = require('../lib/compiler')
 const Requester = require('../lib/requester')
 const Poller = require('../lib/poller')
+const ResultWriter = require('../lib/result_writer')
 const { getLogger } = require('../lib/logging')
 
 const args = require('yargs')
@@ -52,23 +53,32 @@ function run () {
     logger: logger,
     apiUrl: apiUrl,
     apiKey: args.apikey})
+  const resultWriter = new ResultWriter({logger: logger})
 
   const errorHandler = (err) => logger.error(err)
   watcher.on('err', errorHandler)
   compiler.on('err', errorHandler)
   requester.on('err', errorHandler)
   poller.on('err', errorHandler)
+  resultWriter.on('err', errorHandler)
 
-  // main pipeline, each step adds info to the object in transit
+  // main pipeline, each step performs some required functionality and adds info
+  // to the object in transit
 
-  // watcher adds paths of .sol files created/changed
+  // watcher looks into an specific directory and starts the pipeline, adds paths
+  // of .sol files created/changed
   watcher
-  // for each contract, compiler adds name and bytecode
+  // for each contract in each of the changed/added files, compiler compiles it
+  // and adds its name and bytecode to the object down the pipeline
     .pipe(compiler)
-  // requester adds uuid of the requested analysis
+  // requester sends an analysis request to the API and adds uuid of the
+  // requested analysis
     .pipe(requester)
-  // poller adds issues returned by the API
+  // poller keeps querying the API until it gets the analysis results, then adds
+  // the returned issues to the in-transit object.
     .pipe(poller)
+  // resultWriter writes down a file with the issues and adds its path.
+    .pipe(resultWriter)
 }
 
 try {
