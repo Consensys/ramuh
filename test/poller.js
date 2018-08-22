@@ -1,6 +1,6 @@
 const tape = require('tape')
 const Poller = require('../lib/poller')
-const PassThrough = require('stream').PassThrough
+const { PassThrough } = require('stream')
 const { getLogger } = require('../lib/logging')
 const nock = require('nock')
 const url = require('url')

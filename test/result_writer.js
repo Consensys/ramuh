@@ -1,5 +1,5 @@
 const tape = require('tape')
-const PassThrough = require('stream').PassThrough
+const { PassThrough } = require('stream')
 const { getLogger } = require('../lib/logging')
 const tmp = require('tmp')
 const fs = require('fs')
@@ -12,7 +12,7 @@ tape('[RESULT_WRITER]: basic functionality', t => {
   t.test('should write result files', st => {
     const tmpDir = tmp.dirSync().name
     const contractFile = 'test.sol'
-    const contractName = ':Hello'
+    const contractName = 'Hello'
     const expectedContractName = 'Hello'
 
     const resultWriter = new ResultWriter({logger: logger})

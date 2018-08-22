@@ -2,7 +2,7 @@ const tape = require('tape')
 const fs = require('fs')
 const path = require('path')
 const tmp = require('tmp')
-const PassThrough = require('stream').PassThrough
+const { PassThrough } = require('stream')
 const sinon = require('sinon')
 const solc = require('solc')
 
@@ -43,7 +43,7 @@ contract Hello {}
     target.on('data', (data) => {
       st.equal(data.filePath, filePath)
 
-      st.equal(data.contract.name, ':Hello')
+      st.equal(data.contract.name, 'Hello')
 
       st.equal(data.contract.bytecode, expectedBytecode)
 
@@ -119,11 +119,11 @@ contract Hello is GoodBay {}
       st.equal(data.filePath, filePath)
 
       if (first) {
-        st.equal(data.contract.name, ':GoodBay')
+        st.equal(data.contract.name, 'GoodBay')
         st.equal(data.contract.bytecode, expectedBytecode)
         first = false
       } else {
-        st.equal(data.contract.name, ':Hello')
+        st.equal(data.contract.name, 'Hello')
         st.equal(data.contract.bytecode, expectedBytecode)
 
         solc.compile.restore()

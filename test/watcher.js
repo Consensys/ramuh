@@ -2,7 +2,7 @@ const tape = require('tape')
 const fs = require('fs')
 const tmp = require('tmp')
 const path = require('path')
-const PassThrough = require('stream').PassThrough
+const { PassThrough } = require('stream')
 
 const Watcher = require('../lib/watcher')
 const { getLogger } = require('../lib/logging')
