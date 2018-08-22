@@ -13,7 +13,7 @@ tape('[WATCHER]: observed files', t => {
     const tmpDir = tmp.dirSync().name
     const contractName = 'test.sol'
 
-    const resultWriter = new ResultWriter({logger: logger, contractsPath: tmpDir})
+    const resultWriter = new ResultWriter({logger: logger})
 
     const origin = PassThrough({objectMode: true})
     const target = PassThrough({objectMode: true})
@@ -52,6 +52,32 @@ tape('[WATCHER]: observed files', t => {
       filePath: path.resolve(tmpDir, contractName),
       analysis: {
         issues: expectedIssues
+      }
+    })
+
+    origin.pipe(resultWriter).pipe(target)
+  })
+
+  t.test('should handle write errors', st => {
+    const badDir = 'not-an-actual-dir'
+    const contractName = 'test.sol'
+
+    const resultWriter = new ResultWriter({logger: logger})
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    const filePath = path.resolve(badDir, contractName)
+    resultWriter.on('err', (err) => {
+      st.ok(err.startsWith(`Could not write results file ${filePath}`))
+
+      st.end()
+    })
+
+    origin.write({
+      filePath: filePath,
+      analysis: {
+        issues: []
       }
     })
 
