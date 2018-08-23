@@ -33,21 +33,47 @@ const expectedIssues = [
     debug: 'SOLVER OUTPUT:\ncalldata_MAIN_0: 0xcbf0b0c000000000000000000000000000000000000000000000000000000000\ncalldatasize_MAIN: 0x4\ncallvalue: 0x0\n'
   }
 ]
-const firstKey = ':' + firstContractName
-const secondKey = ':' + secondContractName
+const fileName = 'test.sol'
+const contractContent = 'fake content'
 
 tape('[PIPELINE]: basic functionality', t => {
   t.test('setup', st => {
-    sinon.stub(solc, 'compile').returns({
-      contracts: {
-        [firstKey]: {
-          bytecode: firstBytecode
+    sinon.stub(solc, 'compileStandardWrapper')
+      .withArgs(JSON.stringify({
+        language: 'Solidity',
+        sources: {
+          [fileName]: {
+            content: contractContent
+          }
         },
-        [secondKey]: {
-          bytecode: secondBytecode
+        settings: {
+          outputSelection: {
+            '*': {
+              '*': [ 'evm.deployedBytecode' ]
+            }
+          }
         }
-      }
-    })
+      }))
+      .returns(JSON.stringify({
+        contracts: {
+          [fileName]: {
+            [firstContractName]: {
+              evm: {
+                deployedBytecode: {
+                  object: firstBytecode
+                }
+              }
+            },
+            [secondContractName]: {
+              evm: {
+                deployedBytecode: {
+                  object: secondBytecode
+                }
+              }
+            }
+          }
+        }
+      }))
 
     nock(`${apiUrl.href}`, {
       reqheaders: {
@@ -126,8 +152,8 @@ tape('[PIPELINE]: basic functionality', t => {
 
     origin.pipe(target)
 
-    const filePath = path.resolve(tmpDir, 'test.sol')
-    fs.writeFile(filePath, 'fake content', (err) => {
+    const filePath = path.resolve(tmpDir, fileName)
+    fs.writeFile(filePath, contractContent, (err) => {
       st.error(err, 'writing file succeeded')
     })
 
@@ -161,7 +187,7 @@ tape('[PIPELINE]: basic functionality', t => {
   })
 
   t.test('teardown', st => {
-    solc.compile.restore()
+    solc.compileStandardWrapper.restore()
     st.end()
   })
 })
