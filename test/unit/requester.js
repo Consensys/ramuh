@@ -1,16 +1,17 @@
 const tape = require('tape')
-const Requester = require('../lib/requester')
 const { PassThrough } = require('stream')
-const { getLogger } = require('../lib/logging')
 const nock = require('nock')
 const url = require('url')
+
+const Requester = require('../../lib/requester')
+const { getLogger } = require('../../lib/logging')
 
 const logger = getLogger({loglevel: 'error'})
 const apiUrl = url.parse('http://localhost:3100')
 const basePath = '/mythril/v1/analysis'
 const filePath = 'test.sol'
 const bytecode = 'my-byte-code'
-const contractName = ':Hello'
+const contractName = 'Hello'
 const validApiKey = 'my-valid-api-key'
 
 tape('[REQUESTER]: server interaction', t => {
@@ -96,6 +97,80 @@ tape('[REQUESTER]: server interaction', t => {
       st.equal(data.analysis.uuid, uuid)
 
       st.end()
+    })
+  })
+
+  t.test('should request analysis for consecutive contracts', st => {
+    const uuid1 = '82e368be-8fa3-469a-83d4-2fdcacb2d1dd'
+    const uuid2 = '55e368be-8fa3-469a-83d4-2fdcacb2d1ee'
+    const bytecode2 = 'my-bytecode-2'
+    const contractName2 = 'GoodBye'
+
+    nock(`${apiUrl.href}`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .post(basePath, {
+        type: 'bytecode',
+        contract: bytecode
+      })
+      .reply(200, {
+        result: 'Queued',
+        uuid: uuid1
+      })
+    nock(`${apiUrl.href}`, {
+      reqheaders: {
+        authorization: `Bearer ${validApiKey}`
+      }
+    })
+      .post(basePath, {
+        type: 'bytecode',
+        contract: bytecode2
+      })
+      .reply(200, {
+        result: 'Queued',
+        uuid: uuid2
+      })
+
+    const requester = new Requester({logger: logger, apiUrl: apiUrl, apiKey: validApiKey})
+
+    const origin = PassThrough({objectMode: true})
+    const target = PassThrough({objectMode: true})
+
+    origin.pipe(requester).pipe(target)
+
+    origin.write({
+      filePath: filePath,
+      contract: {
+        name: contractName,
+        bytecode: bytecode
+      }
+    })
+    origin.write({
+      filePath: filePath,
+      contract: {
+        name: contractName2,
+        bytecode: bytecode2
+      }
+    })
+
+    let first = true
+    target.on('data', (data) => {
+      st.equal(data.filePath, filePath)
+
+      if (first) {
+        st.equal(data.contract.name, contractName)
+        st.equal(data.contract.bytecode, bytecode)
+        st.equal(data.analysis.uuid, uuid1)
+        first = false
+      } else {
+        st.equal(data.contract.name, contractName2)
+        st.equal(data.contract.bytecode, bytecode2)
+        st.equal(data.analysis.uuid, uuid2)
+
+        st.end()
+      }
     })
   })
 })

@@ -4,8 +4,8 @@ const tmp = require('tmp')
 const path = require('path')
 const { PassThrough } = require('stream')
 
-const Watcher = require('../lib/watcher')
-const { getLogger } = require('../lib/logging')
+const Watcher = require('../../lib/watcher')
+const { getLogger } = require('../../lib/logging')
 
 const logger = getLogger({loglevel: 'error'})
 

@@ -1,9 +1,10 @@
 const tape = require('tape')
-const Poller = require('../lib/poller')
 const { PassThrough } = require('stream')
-const { getLogger } = require('../lib/logging')
 const nock = require('nock')
 const url = require('url')
+
+const Poller = require('../../lib/poller')
+const { getLogger } = require('../../lib/logging')
 
 const logger = getLogger({loglevel: 'err'})
 const apiUrl = url.parse('http://localhost:3108')

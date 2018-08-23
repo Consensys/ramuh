@@ -1,11 +1,12 @@
 const tape = require('tape')
 const { PassThrough } = require('stream')
-const { getLogger } = require('../lib/logging')
 const tmp = require('tmp')
 const fs = require('fs')
 const path = require('path')
 
-const ResultWriter = require('../lib/result_writer')
+const ResultWriter = require('../../lib/result_writer')
+const { getLogger } = require('../../lib/logging')
+
 const logger = getLogger({loglevel: 'error'})
 
 tape('[RESULT_WRITER]: basic functionality', t => {
