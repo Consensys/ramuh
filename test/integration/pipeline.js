@@ -7,6 +7,7 @@ const sinon = require('sinon')
 const nock = require('nock')
 const url = require('url')
 const solc = require('solc')
+const notifier = require('node-notifier')
 
 const Pipeline = require('../../lib/pipeline')
 const { getLogger } = require('../../lib/logging')
@@ -74,6 +75,8 @@ tape('[PIPELINE]: basic functionality', t => {
           }
         }
       }))
+
+    sinon.stub(notifier, 'notify')
 
     nock(`${apiUrl.href}`, {
       reqheaders: {
@@ -171,6 +174,7 @@ tape('[PIPELINE]: basic functionality', t => {
         st.equal(data.analysis.uuid, firstUuid)
         st.deepEqual(data.analysis.issues, [])
         st.equal(data.results.path, firstResultsPath)
+        st.notok(data.notified)
 
         first = false
       } else {
@@ -179,6 +183,7 @@ tape('[PIPELINE]: basic functionality', t => {
         st.equal(data.analysis.uuid, secondUuid)
         st.deepEqual(data.analysis.issues, expectedIssues)
         st.equal(data.results.path, secondResultsPath)
+        st.ok(data.notified)
 
         pipeline.stop()
         st.end()
@@ -188,6 +193,8 @@ tape('[PIPELINE]: basic functionality', t => {
 
   t.test('teardown', st => {
     solc.compileStandardWrapper.restore()
+    notifier.notify.restore()
+
     st.end()
   })
 })
