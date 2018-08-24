@@ -149,7 +149,7 @@ tape('[PIPELINE]: basic functionality', t => {
 
   t.test('result files should be writen', st => {
     const tmpDir = tmp.dirSync().name
-    const pipeline = new Pipeline(tmpDir, apiUrl, apiKey, logger)
+    const pipeline = new Pipeline({contractsPath: tmpDir, apiUrl: apiUrl, apiKey: apiKey, logger: logger})
     const origin = pipeline.run()
     const target = PassThrough({objectMode: true})
 

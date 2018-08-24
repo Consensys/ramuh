@@ -32,7 +32,12 @@ const logger = getLogger({loglevel: args.loglevel})
 function run () {
   logger.info('Starting ithildin...')
 
-  const pipeline = new Pipeline(args.contractspath, args.apiurl, args.apikey, logger)
+  const pipeline = new Pipeline({
+    contractsPath: args.contractspath,
+    apiUrl: args.apiurl,
+    apiKey: args.apikey,
+    logger: logger
+  })
 
   pipeline.run()
 }
