@@ -191,7 +191,7 @@ tape('[REQUESTER]: error handling', t => {
     const requester = new Requester({logger: logger, apiUrl: apiUrl, apiKey: validApiKey})
 
     requester.on('err', (err) => {
-      st.equal(err, 'received error 500 from API server')
+      st.equal(err, 'Failed to get response, status code 500: received error from API server')
 
       st.end()
     })
@@ -215,7 +215,7 @@ tape('[REQUESTER]: error handling', t => {
     const requester = new Requester({logger: logger, apiUrl: url.parse(invalidApiHostname), apiKey: validApiKey})
 
     requester.on('err', (err) => {
-      st.equal(err, `could not connect to API server at ${invalidApiHostname}/`)
+      st.equal(err, `Could not connect to API server at ${invalidApiHostname}/`)
 
       st.end()
     })
@@ -235,7 +235,7 @@ tape('[REQUESTER]: error handling', t => {
   })
 
   t.test('should handle request limit errors', st => {
-    const expectedErrorMsg = 'Request limit exceeded'
+    const expectedErrorMsg = 'request limit exceeded'
     nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
@@ -252,7 +252,7 @@ tape('[REQUESTER]: error handling', t => {
     const requester = new Requester({logger: logger, apiUrl: apiUrl, apiKey: validApiKey})
 
     requester.on('err', (err) => {
-      st.equal(err, expectedErrorMsg)
+      st.equal(err, `Failed to get response, status code 429: ${expectedErrorMsg}`)
 
       st.end()
     })
@@ -271,7 +271,7 @@ tape('[REQUESTER]: error handling', t => {
     origin.pipe(requester).pipe(target)
   })
   t.test('should handle validation errors', st => {
-    const expectedErrorMsg = 'Validation failed'
+    const expectedErrorMsg = 'validation failed'
     nock(`${apiUrl.href}`, {
       reqheaders: {
         authorization: `Bearer ${validApiKey}`
@@ -288,7 +288,7 @@ tape('[REQUESTER]: error handling', t => {
     const requester = new Requester({logger: logger, apiUrl: apiUrl, apiKey: validApiKey})
 
     requester.on('err', (err) => {
-      st.equal(err, expectedErrorMsg)
+      st.equal(err, `Failed to get response, status code 400: ${expectedErrorMsg}`)
 
       st.end()
     })
@@ -325,7 +325,7 @@ tape('[REQUESTER]: authentication', t => {
 
     const requester = new Requester({logger: logger, apiUrl: apiUrl, apiKey: inValidApiKey})
     requester.on('err', (err) => {
-      st.equal(err, `Unauthorized analysis request, API key: ${inValidApiKey}`)
+      st.equal(err, `Failed to get response, status code 401: unauthorized analysis request, API key: ${inValidApiKey}`)
 
       st.end()
     })
