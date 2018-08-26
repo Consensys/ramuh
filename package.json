@@ -1,9 +1,9 @@
 {
-  "name": "ithildin",
+  "name": "ramuh",
   "version": "0.1.0",
-  "description": "ithildin",
+  "description": "ramuh",
   "bin": {
-    "ithildin": "bin/cli.js"
+    "ramuh": "bin/cli.js"
   },
   "scripts": {
     "lint": "standard",

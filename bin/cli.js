@@ -30,7 +30,7 @@ const args = require('yargs')
 const logger = getLogger({loglevel: args.loglevel})
 
 function run () {
-  logger.info('Starting ithildin...')
+  logger.info('Starting ramuh...')
 
   const pipeline = new Pipeline({
     contractsPath: args.contractspath,
