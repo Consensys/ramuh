@@ -1,4 +1,4 @@
-const tape = require('tape')
+/* eslint no-unused-expressions: 0 */
 const { PassThrough } = require('stream')
 const tmp = require('tmp')
 const fs = require('fs')
@@ -9,8 +9,8 @@ const { getLogger } = require('../../lib/logging')
 
 const logger = getLogger({loglevel: 'error'})
 
-tape('[RESULT_WRITER]: basic functionality', t => {
-  t.test('should write result files', st => {
+describe('result_writer', t => {
+  it('should write result files', done => {
     const tmpDir = tmp.dirSync().name
     const contractFile = 'test.sol'
     const contractName = 'Hello'
@@ -40,16 +40,16 @@ tape('[RESULT_WRITER]: basic functionality', t => {
       }
     ]
 
-    target.on('data', (data) => {
+    target.on('data', data => {
       const expectedFilename = [contractFile, expectedContractName, 'mythril'].join('.')
       const expectedResultsPath = path.resolve(tmpDir, expectedFilename)
-      st.equal(data.results.path, expectedResultsPath)
+      data.results.path.should.be.equal(expectedResultsPath)
 
       const contents = fs.readFileSync(expectedResultsPath)
       const contentObj = JSON.parse(contents)
-      st.deepEqual(expectedIssues, contentObj)
+      expectedIssues.should.be.deep.equal(contentObj)
 
-      st.end()
+      done()
     })
 
     origin.write({
@@ -65,7 +65,7 @@ tape('[RESULT_WRITER]: basic functionality', t => {
     origin.pipe(resultWriter).pipe(target)
   })
 
-  t.test('should handle write errors', st => {
+  it('should handle write errors', done => {
     const badDir = 'not-an-actual-dir'
     const contractName = 'test.sol'
 
@@ -75,10 +75,10 @@ tape('[RESULT_WRITER]: basic functionality', t => {
     const target = PassThrough({objectMode: true})
 
     const filePath = path.resolve(badDir, contractName)
-    resultWriter.on('err', (err) => {
-      st.ok(err.startsWith(`Could not write results file ${filePath}`))
+    resultWriter.on('err', err => {
+      err.startsWith(`Could not write results file ${filePath}`).should.be.true
 
-      st.end()
+      done()
     })
 
     origin.write({
