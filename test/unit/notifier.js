@@ -1,7 +1,8 @@
-const tape = require('tape')
+/* eslint no-unused-expressions: 0 */
 const nodeNotifier = require('node-notifier')
 const sinon = require('sinon')
 const { PassThrough } = require('stream')
+
 const Notifier = require('../../lib/notifier')
 const { getLogger } = require('../../lib/logging')
 
@@ -9,13 +10,16 @@ const logger = getLogger({loglevel: 'err'})
 const filePath = 'file-path'
 const resultsPath = 'results-path'
 
-tape('[NOTIFIER]: general functionallity', t => {
-  t.test('setup', st => {
+describe('notifier', () => {
+  beforeEach(() => {
     sinon.stub(nodeNotifier, 'notify')
-
-    st.end()
   })
-  t.test('should send notifications on issues', st => {
+
+  afterEach(() => {
+    nodeNotifier.notify.restore()
+  })
+
+  it('should send notifications on issues', done => {
     const issueName = 'issue-name'
 
     const notifier = new Notifier({logger: logger})
@@ -39,14 +43,14 @@ tape('[NOTIFIER]: general functionallity', t => {
       }
     })
 
-    target.on('data', (data) => {
-      st.ok(data.notified)
+    target.on('data', data => {
+      data.notified.should.be.true
 
-      st.end()
+      done()
     })
   })
 
-  t.test('should not  send notifications on empty issues', st => {
+  it('should not  send notifications on empty issues', done => {
     const notifier = new Notifier({logger: logger})
 
     const origin = PassThrough({objectMode: true})
@@ -64,16 +68,10 @@ tape('[NOTIFIER]: general functionallity', t => {
       }
     })
 
-    target.on('data', (data) => {
-      st.notok(data.notified)
+    target.on('data', data => {
+      data.notified.should.not.be.true
 
-      st.end()
+      done()
     })
-  })
-
-  t.test('teardown', st => {
-    nodeNotifier.notify.restore()
-
-    st.end()
   })
 })
