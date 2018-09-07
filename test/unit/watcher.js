@@ -1,36 +1,36 @@
-const tape = require('tape')
 const fs = require('fs')
 const tmp = require('tmp')
 const path = require('path')
 const { PassThrough } = require('stream')
+const should = require('chai').should()
 
 const Watcher = require('../../lib/watcher')
 const { getLogger } = require('../../lib/logging')
 
 const logger = getLogger({loglevel: 'error'})
 
-tape('[WATCHER]: observed files', t => {
-  t.test('should pipe file name of new .sol files on creation', st => {
+describe('watcher', () => {
+  it('should pipe file name of new .sol files on creation', done => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
     const ts = PassThrough({objectMode: true})
 
     const filePath = path.resolve(tmpDir, 'test.sol')
-    fs.writeFile(filePath, 'Hey there!', (err) => {
-      st.error(err, 'writing file succeeded')
+    fs.writeFile(filePath, 'Hey there!', err => {
+      should.not.exist(err)
 
       watcher.pipe(ts)
     })
 
-    ts.on('data', (data) => {
-      st.equal(data.filePath, filePath)
+    ts.on('data', data => {
+      data.filePath.should.be.equal(filePath)
       watcher.stop()
-      st.end()
+      done()
     })
   })
 
-  t.test('should not pipe file name of new files with non sol extension on creation', st => {
+  it('should not pipe file name of new files with non sol extension on creation', done => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
@@ -40,8 +40,8 @@ tape('[WATCHER]: observed files', t => {
     const fileNames = ['test1.sol', badFileName, 'test2.sol']
     for (let i = 0; i < fileNames.length; i++) {
       const filePath = path.resolve(tmpDir, fileNames[i])
-      fs.writeFile(filePath, 'Hey there!', (err) => {
-        st.error(err, `writing ${filePath} succeeded`)
+      fs.writeFile(filePath, 'Hey there!', err => {
+        should.not.exist(err)
 
         if (i === fileNames.length - 1) {
           watcher.pipe(ts)
@@ -51,17 +51,17 @@ tape('[WATCHER]: observed files', t => {
 
     let total = 0
     const notExpected = path.resolve(tmpDir, badFileName)
-    ts.on('data', (data) => {
+    ts.on('data', data => {
       total++
-      st.notEqual(data.filePath, notExpected, 'non .sol files should not be sent')
+      data.filePath.should.not.be.equal(notExpected)
       if (total === fileNames.length - 1) {
         watcher.stop()
-        st.end()
+        done()
       }
     })
   })
 
-  t.test('should pipe file name of new .sol files on creation only once', st => {
+  it('should pipe file name of new .sol files on creation only once', done => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
@@ -69,8 +69,8 @@ tape('[WATCHER]: observed files', t => {
 
     const fileCreation = (name, doPipe) => {
       const filePath = path.resolve(tmpDir, name)
-      fs.writeFile(filePath, 'Hey there!', (err) => {
-        st.error(err, `writing ${filePath} succeeded`)
+      fs.writeFile(filePath, 'Hey there!', err => {
+        should.not.exist(err)
         if (doPipe) {
           watcher.pipe(ts)
         }
@@ -85,7 +85,7 @@ tape('[WATCHER]: observed files', t => {
     let found = false
     let total = 0
     const expected = path.resolve(tmpDir, 'test.sol')
-    ts.on('data', (data) => {
+    ts.on('data', data => {
       total++
       const actual = data.filePath
       if (actual === expected && !found) {
@@ -93,43 +93,43 @@ tape('[WATCHER]: observed files', t => {
         return
       }
       if (found) {
-        st.notEqual(actual, expected)
+        actual.should.not.be.equal(expected)
       }
       if (total === 3) {
         watcher.stop()
-        st.end()
+        done()
       }
     })
   })
 
-  t.test('should pipe file name of .sol files on changes', st => {
+  it('should pipe file name of .sol files on changes', done => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
     const ts = PassThrough({objectMode: true})
 
     const filePath = path.resolve(tmpDir, 'test.sol')
-    fs.writeFile(filePath, 'Hey there!', (err) => {
-      st.error(err, 'writing file succeeded')
+    fs.writeFile(filePath, 'Hey there!', err => {
+      should.not.exist(err)
       watcher.pipe(ts)
-      setTimeout(fs.appendFile, 50, filePath, 'more data, yay!', (err) => {
-        st.error(err, 'appending to file succeeded')
+      setTimeout(fs.appendFile, 50, filePath, 'more data, yay!', err => {
+        should.not.exist(err)
       })
     })
 
     let created = false
-    ts.on('data', (data) => {
-      st.equal(data.filePath, filePath)
+    ts.on('data', data => {
+      data.filePath.should.be.equal(filePath)
       if (created === false) {
         created = true
       } else {
         watcher.stop()
-        st.end()
+        done()
       }
     })
   })
 
-  t.test('should pipe file name of new .sol files created on subfolders', st => {
+  it('should pipe file name of new .sol files created on subfolders', done => {
     const tmpDir = tmp.dirSync().name
     const watcher = new Watcher({contractsPath: tmpDir, pollingStep: 10, logger: logger})
 
@@ -139,16 +139,16 @@ tape('[WATCHER]: observed files', t => {
     fs.mkdirSync(subFolder)
 
     const filePath = path.resolve(subFolder, 'test.sol')
-    fs.writeFile(filePath, 'Hey there!', (err) => {
-      st.error(err, 'writing file succeeded')
+    fs.writeFile(filePath, 'Hey there!', err => {
+      should.not.exist(err)
 
       watcher.pipe(ts)
     })
 
-    ts.on('data', (data) => {
-      st.equal(data.filePath, filePath)
+    ts.on('data', data => {
+      data.filePath.should.equal(filePath)
       watcher.stop()
-      st.end()
+      done()
     })
   })
 })
