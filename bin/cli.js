@@ -2,6 +2,8 @@
 'use strict'
 
 const path = require('path')
+const url = require('url')
+const { Client } = require('armlet')
 
 const Pipeline = require('../lib/pipeline')
 const { getLogger } = require('../lib/logging')
@@ -32,10 +34,16 @@ const logger = getLogger({loglevel: args.loglevel})
 function run () {
   logger.info('Starting ramuh...')
 
+  // args validation
+  const apiUrl = url.parse(args.apiUrl)
+  if (apiUrl.hostname === null) {
+    throw new Error(`${apiUrl} is not a valid URL`)
+  }
+  const analyzer = new Client({apiUrl: apiUrl, apiKey: args.apiKey})
+
   const pipeline = new Pipeline({
     contractsPath: args.contractspath,
-    apiUrl: args.apiurl,
-    apiKey: args.apikey,
+    analyzer: analyzer,
     logger: logger
   })
 

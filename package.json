@@ -1,17 +1,23 @@
 {
   "name": "ramuh",
   "version": "0.1.0",
-  "description": "ramuh",
+  "description": "Ramuh brings security insights from Mythril Platform API into your desktop. When your smart contracts are saved, if there are security issues detected by Mythril you'll get a notification and information abour the issues.",
   "bin": {
     "ramuh": "bin/cli.js"
   },
   "scripts": {
     "lint": "standard",
-    "test": "npm run lint && tape 'test/**/*.js'"
+    "test": "npm run lint && mocha --reporter spec --recursive"
+  },
+  "standard": {
+    "env": [
+      "mocha"
+    ]
   },
   "author": "Federico Gimenez <federico.gimenez@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
+    "armlet": "^0.1.7",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "json-beautify": "^1.0.1",
@@ -21,7 +27,9 @@
     "yargs": "^11.1.0"
   },
   "devDependencies": {
-    "nock": "^9.6.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^5.2.0",
     "sinon": "^6.1.5",
     "standard": "~11.0.1",
     "tape": "^4.9.1",
