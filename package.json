@@ -14,10 +14,10 @@
       "mocha"
     ]
   },
-  "author": "Federico Gimenez <federico.gimenez@gmail.com>",
+  "author": "Federico Gimenez <federico.gimenez@consensys.net>",
   "license": "MIT",
   "dependencies": {
-    "armlet": "^0.1.7",
+    "armlet": "^0.2.2",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "json-beautify": "^1.0.1",
