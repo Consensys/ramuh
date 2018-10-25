@@ -16,7 +16,7 @@ const sourceMap = 'my-source-map'
 const deployedSourceMap = 'my-deployed-source-map'
 const sources = {}
 sources[filePath] = source
-const options = {
+const data = {
   contractName,
   bytecode,
   deployedBytecode,
@@ -41,7 +41,7 @@ describe('client', () => {
   it('includes the results given by armlet', done => {
     const analyzer = {analyze: () => {}}
     sinon.stub(analyzer, 'analyze')
-      .withArgs(options)
+      .withArgs({data})
       .returns(new Promise((resolve, reject) => {
         resolve(expectedIssues)
       }))

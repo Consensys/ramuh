@@ -109,11 +109,11 @@ describe('pipeline', () => {
       }))
 
     sinon.stub(analyzer, 'analyze')
-      .withArgs(firstOptions)
+      .withArgs({data: firstOptions})
       .returns(new Promise(resolve => {
         resolve([])
       }))
-      .withArgs(secondOptions)
+      .withArgs({data: secondOptions})
       .returns(new Promise(resolve => {
         resolve(expectedIssues)
       }))

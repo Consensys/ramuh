@@ -33,13 +33,12 @@ const logger = getLogger({loglevel: args.loglevel})
 
 function run () {
   logger.info('Starting ramuh...')
-
   // args validation
-  const apiUrl = url.parse(args.apiUrl)
+  const apiUrl = url.parse(args.apiurl)
   if (apiUrl.hostname === null) {
     throw new Error(`${apiUrl} is not a valid URL`)
   }
-  const analyzer = new Client({apiUrl: apiUrl, apiKey: args.apiKey})
+  const analyzer = new Client({apiKey: args.apikey, userEmail: 'user@email'}, apiUrl)
 
   const pipeline = new Pipeline({
     contractsPath: args.contractspath,
