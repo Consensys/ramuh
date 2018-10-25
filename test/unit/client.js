@@ -8,8 +8,24 @@ const { getLogger } = require('../../lib/logging')
 
 const logger = getLogger({loglevel: 'err'})
 const filePath = 'test.sol'
-const bytecode = 'my-byte-code'
+const source = 'my source'
+const bytecode = 'my-bytecode'
+const deployedBytecode = 'my-deployed-byte-code'
 const contractName = 'Hello'
+const sourceMap = 'my-source-map'
+const deployedSourceMap = 'my-deployed-source-map'
+const sources = {}
+sources[filePath] = source
+const options = {
+  contractName,
+  bytecode,
+  deployedBytecode,
+  analysisMode: 'full',
+  sources,
+  sourceList: [filePath],
+  sourceMap,
+  deployedSourceMap
+}
 const expectedIssues = [
   {
     title: 'my issue',
@@ -25,7 +41,7 @@ describe('client', () => {
   it('includes the results given by armlet', done => {
     const analyzer = {analyze: () => {}}
     sinon.stub(analyzer, 'analyze')
-      .withArgs({bytecode: bytecode})
+      .withArgs(options)
       .returns(new Promise((resolve, reject) => {
         resolve(expectedIssues)
       }))
@@ -36,10 +52,15 @@ describe('client', () => {
     const client = new Client({logger: logger, analyzer: analyzer})
 
     origin.write({
-      filePath: filePath,
+      filePath,
       contract: {
+        fileName: filePath,
         name: contractName,
-        bytecode: bytecode
+        bytecode,
+        deployedBytecode,
+        source,
+        sourceMap,
+        deployedSourceMap
       }
     })
 

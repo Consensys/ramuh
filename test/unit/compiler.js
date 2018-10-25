@@ -12,6 +12,12 @@ const { getLogger } = require('../../lib/logging')
 const logger = getLogger({loglevel: 'err'})
 const helloBytecode = 'hello-bytecode'
 const goodbyeBytecode = 'goodbye-bytecode'
+const helloDeployedBytecode = 'hello-deployed-bytecode'
+const goodbyeDeployedBytecode = 'goodbye-deployed-bytecode'
+const helloSourceMap = 'hello-sourceMap'
+const goodbyeSourceMap = 'goodbye-sourceMap'
+const helloDeployedSourceMap = 'hello-deployed-sourceMap'
+const goodbyeDeployedSourceMap = 'goodbye-deployed-sourceMap'
 
 describe('compiler', () => {
   afterEach(() => {
@@ -36,7 +42,7 @@ contract Hello {}
         settings: {
           outputSelection: {
             '*': {
-              '*': [ 'evm.deployedBytecode' ]
+              '*': [ 'evm.deployedBytecode', 'evm.bytecode' ]
             }
           }
         }
@@ -46,8 +52,13 @@ contract Hello {}
           [fileName]: {
             'Hello': {
               evm: {
+                bytecode: {
+                  object: helloBytecode,
+                  sourceMap: helloSourceMap
+                },
                 deployedBytecode: {
-                  object: helloBytecode
+                  object: helloDeployedBytecode,
+                  sourceMap: helloDeployedSourceMap
                 }
               }
             }
@@ -73,6 +84,9 @@ contract Hello {}
       data.contract.name.should.be.equal('Hello')
 
       data.contract.bytecode.should.be.equal(helloBytecode)
+      data.contract.deployedBytecode.should.be.equal(helloDeployedBytecode)
+      data.contract.sourceMap.should.be.equal(helloSourceMap)
+      data.contract.deployedSourceMap.should.be.equal(helloDeployedSourceMap)
 
       done()
     })
@@ -118,15 +132,25 @@ contract Hello {}
         [fileName]: {
           'GoodBye': {
             evm: {
+              bytecode: {
+                object: goodbyeBytecode,
+                sourceMap: goodbyeSourceMap
+              },
               deployedBytecode: {
-                object: goodbyeBytecode
+                object: goodbyeDeployedBytecode,
+                sourceMap: goodbyeDeployedSourceMap
               }
             }
           },
           'Hello': {
             evm: {
+              bytecode: {
+                object: helloBytecode,
+                sourceMap: helloSourceMap
+              },
               deployedBytecode: {
-                object: helloBytecode
+                object: helloDeployedBytecode,
+                sourceMap: helloDeployedSourceMap
               }
             }
           }
@@ -157,10 +181,17 @@ contract Hello is GoodBye {}
       if (first) {
         data.contract.name.should.be.equal('GoodBye')
         data.contract.bytecode.should.be.equal(goodbyeBytecode)
+        data.contract.deployedBytecode.should.be.equal(goodbyeDeployedBytecode)
+        data.contract.sourceMap.should.be.equal(goodbyeSourceMap)
+        data.contract.deployedSourceMap.should.be.equal(goodbyeDeployedSourceMap)
+
         first = false
       } else {
         data.contract.name.should.be.equal('Hello')
         data.contract.bytecode.should.be.equal(helloBytecode)
+        data.contract.deployedBytecode.should.be.equal(helloDeployedBytecode)
+        data.contract.sourceMap.should.be.equal(helloSourceMap)
+        data.contract.deployedSourceMap.should.be.equal(helloDeployedSourceMap)
 
         done()
       }

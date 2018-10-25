@@ -16,6 +16,36 @@ const firstContractName = 'Hello'
 const secondContractName = 'GoodBye'
 const firstBytecode = 'hello-bytecode'
 const secondBytecode = 'goodbye-bytecode'
+const firstDeployedBytecode = 'hello-deployed-bytecode'
+const secondDeployedBytecode = 'goodbye-deployed-bytecode'
+const firstSourceMap = 'hello-sourcemap'
+const secondSourceMap = 'goodbye-sourcemap'
+const firstDeployedSourceMap = 'hello-deployed-sourcemap'
+const secondDeployedSourceMap = 'goodbye-deployed-sourcemap'
+const fileName = 'test.sol'
+const contractContent = 'fake content'
+const source = {}
+source[fileName] = contractContent
+const firstOptions = {
+  analysisMode: 'full',
+  contractName: firstContractName,
+  bytecode: firstBytecode,
+  deployedBytecode: firstDeployedBytecode,
+  sources: source,
+  sourceList: [fileName],
+  sourceMap: firstSourceMap,
+  deployedSourceMap: firstDeployedSourceMap
+}
+const secondOptions = {
+  analysisMode: 'full',
+  contractName: secondContractName,
+  bytecode: secondBytecode,
+  deployedBytecode: secondDeployedBytecode,
+  sources: source,
+  sourceList: [fileName],
+  sourceMap: secondSourceMap,
+  deployedSourceMap: secondDeployedSourceMap
+}
 const expectedIssues = [
   {
     title: 'Unchecked SUICIDE',
@@ -26,8 +56,7 @@ const expectedIssues = [
     debug: 'SOLVER OUTPUT:\ncalldata_MAIN_0: 0xcbf0b0c000000000000000000000000000000000000000000000000000000000\ncalldatasize_MAIN: 0x4\ncallvalue: 0x0\n'
   }
 ]
-const fileName = 'test.sol'
-const contractContent = 'fake content'
+
 const analyzer = {analyze: () => {}}
 
 describe('pipeline', () => {
@@ -43,7 +72,7 @@ describe('pipeline', () => {
         settings: {
           outputSelection: {
             '*': {
-              '*': [ 'evm.deployedBytecode' ]
+              '*': [ 'evm.deployedBytecode', 'evm.bytecode' ]
             }
           }
         }
@@ -53,15 +82,25 @@ describe('pipeline', () => {
           [fileName]: {
             [firstContractName]: {
               evm: {
+                bytecode: {
+                  object: firstBytecode,
+                  sourceMap: firstSourceMap
+                },
                 deployedBytecode: {
-                  object: firstBytecode
+                  object: firstDeployedBytecode,
+                  sourceMap: firstDeployedSourceMap
                 }
               }
             },
             [secondContractName]: {
               evm: {
+                bytecode: {
+                  object: secondBytecode,
+                  sourceMap: secondSourceMap
+                },
                 deployedBytecode: {
-                  object: secondBytecode
+                  object: secondDeployedBytecode,
+                  sourceMap: secondDeployedSourceMap
                 }
               }
             }
@@ -70,11 +109,11 @@ describe('pipeline', () => {
       }))
 
     sinon.stub(analyzer, 'analyze')
-      .withArgs({bytecode: firstBytecode})
+      .withArgs(firstOptions)
       .returns(new Promise(resolve => {
         resolve([])
       }))
-      .withArgs({bytecode: secondBytecode})
+      .withArgs(secondOptions)
       .returns(new Promise(resolve => {
         resolve(expectedIssues)
       }))
