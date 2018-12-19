@@ -1,6 +1,6 @@
 {
   "name": "ramuh",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Ramuh brings security insights from Mythril Platform API into your desktop. When your smart contracts are saved, if there are security issues detected by Mythril you'll get a notification and information abour the issues.",
   "bin": {
     "ramuh": "bin/cli.js"
@@ -17,7 +17,7 @@
   "author": "Federico Gimenez <federico.gimenez@consensys.net>",
   "license": "MIT",
   "dependencies": {
-    "armlet": "^0.2.2",
+    "armlet": "^0.3.0",
     "chalk": "^2.4.1",
     "chokidar": "^2.0.4",
     "json-beautify": "^1.0.1",
