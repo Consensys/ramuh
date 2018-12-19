@@ -16,10 +16,19 @@ const args = require('yargs')
     },
     'apiurl': {
       describe: 'URL of Mythril API server',
-      default: 'https://api.mythril.ai'
+      default: 'https://api.mythx.io'
     },
     'apikey': {
-      describe: 'API key for accessing Mytrhil'
+      describe: 'API key for accessing MythX Platform',
+      default: process.env.MYTHX_API_KEY
+    },
+    'ethaddress': {
+      describe: 'Eth address for accessing MythX Platform',
+      default: process.env.MYTHX_ETH_ADDRESS
+    },
+    'password': {
+      describe: 'Password for accessing MythX Platform',
+      default: process.env.MYTHX_PASSWORD
     },
     'loglevel': {
       describe: 'Logging verbosity',
@@ -38,7 +47,7 @@ function run () {
   if (apiUrl.hostname === null) {
     throw new Error(`${apiUrl} is not a valid URL`)
   }
-  const analyzer = new Client({apiKey: args.apikey, userEmail: 'user@email'}, apiUrl)
+  const analyzer = new Client({apiKey: args.apikey, ethAddress: args.ethaddress, password: args.password}, apiUrl)
 
   const pipeline = new Pipeline({
     contractsPath: args.contractspath,
