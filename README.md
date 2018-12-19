@@ -30,6 +30,5 @@ detected, it will be shown to you as a desktop notification.
 Here is a video about how all this works:
 
 [![Ramuh - MythX interaction](http://img.youtube.com/vi/MQxYBHuYeEA/0.jpg)](http://www.youtube.com/watch?v=MQxYBHuYeEA "Ramuh - MythX interaction")
-https://youtu.be/MQxYBHuYeEA
 
 For more info join the MythX community at [Discord](https://discord.gg/kktn8Wt).
